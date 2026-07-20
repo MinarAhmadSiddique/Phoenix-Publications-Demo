@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your library &middot; Phoenix Publications</title>
+<!-- lives in /members/ — paths use ../ -->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* ============================================================
+     LIBRARY (members/library.html) — the reader's shelf.
+     What they bought (re-downloadable forever) + free saved work.
+     Warmer, quieter tone: honors being a reader who supports
+     writers. Design only, no JS. Sample data.
+     DATA: backend loads from purchases JOIN books JOIN members
+     WHERE buyer_id = current member.
+     ============================================================ */
+ 
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+ 
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a.here { opacity: 1; color: var(--ember); font-weight: 500; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
+  .btn:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+  .avatar-sm { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: var(--size-xs); color: var(--paper); }
+ 
+  /* ---- page head ---- */
+  .lhead { padding: var(--space-16) 0 var(--space-8); border-bottom: 1px solid var(--line); }
+  .lhead h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-3); }
+  .lhead .line { font-family: var(--font-display); font-style: italic; font-size: var(--size-lg); color: var(--ink); opacity: 0.85; max-width: 60ch; }
+ 
+  /* small supporter ribbon */
+  .support { display: flex; gap: var(--space-8); margin-top: var(--space-8); }
+  .support .s { }
+  .support .s .num { font-family: var(--font-display); font-size: var(--size-2xl); font-weight: 600; line-height: 1; }
+  .support .s .lab { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone); margin-top: var(--space-2); }
+  .support .s .num.em { color: var(--ember); }
+ 
+  /* ---- tabs ---- */
+  .tabs { display: flex; gap: var(--space-2); padding: var(--space-8) 0 0; }
+  .tab { font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-5); border-radius: 100px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; transition: all .15s; }
+  .tab:hover { border-color: var(--ember); color: var(--ember); text-decoration: none; }
+  .tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+ 
+  /* ---- library list (rows, not grid — these are owned items) ---- */
+  .lib { padding: var(--space-12) 0 var(--space-16); }
+  .item { display: grid; grid-template-columns: 76px 1fr auto; gap: var(--space-6); align-items: center; padding: var(--space-6) 0; border-top: 1px solid var(--line); }
+  .item:last-child { border-bottom: 1px solid var(--line); }
+  .item .cover { width: 76px; height: 104px; border-radius: var(--radius); box-shadow: var(--shadow); background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .item .cover .ph { font-family: var(--font-display); color: rgba(251,249,244,0.85); font-size: 0.7rem; text-align: center; padding: var(--space-2); line-height: 1.2; }
+  .item:nth-child(2) .cover { background: linear-gradient(150deg, var(--ember), #6e2417); }
+  .item:nth-child(4) .cover { background: linear-gradient(150deg, #4a4036, var(--ink)); }
+  .item:nth-child(5) .cover { background: linear-gradient(150deg, #2d4a44, var(--ink)); }
+ 
+  .item .meta .wtype { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone); font-weight: 600; margin-bottom: var(--space-1); }
+  .item .meta .wtitle { font-family: var(--font-display); font-size: var(--size-lg); font-weight: 600; line-height: 1.15; margin-bottom: var(--space-1); }
+  .item .meta a.wtitle:hover { color: var(--ember); text-decoration: none; }
+  .item .meta .wauthor { font-size: var(--size-sm); color: var(--stone); }
+  .item .meta .wauthor a { color: var(--pine); }
+  .item .meta .bought { font-size: var(--size-xs); color: var(--stone); margin-top: var(--space-2); }
+ 
+  .item .act { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-end; }
+  .item .act .formats { font-size: var(--size-xs); color: var(--stone); }
+ 
+  /* ---- empty state (encouraging) ---- */
+  .empty { border: 1px dashed var(--line); border-radius: var(--radius); padding: var(--space-16); text-align: center; margin-top: var(--space-8); }
+  .empty h3 { font-size: var(--size-xl); margin-bottom: var(--space-3); }
+  .empty p { color: var(--stone); max-width: 48ch; margin: 0 auto var(--space-6); }
+ 
+  /* ---- closing note ---- */
+  .closing { border-top: 1px solid var(--line); padding: var(--space-12) 0; text-align: center; }
+  .closing p { font-family: var(--font-display); font-style: italic; font-size: var(--size-lg); color: var(--ink); opacity: 0.8; max-width: 56ch; margin: 0 auto; }
+ 
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row .brand { font-size: var(--size-base); }
+  .foot-row a { color: var(--stone); }
+ 
+  @media (max-width: 700px) {
+    .lhead h1 { font-size: var(--size-2xl); }
+    nav.main .hide-sm { display: none; }
+    .item { grid-template-columns: 60px 1fr; gap: var(--space-4); }
+    .item .cover { width: 60px; height: 82px; }
+    .item .act { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--space-4); padding-left: calc(60px + var(--space-4)); }
+    .support { gap: var(--space-6); }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ===== TOP BAR (member) ===== -->
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+       <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="dashboard.html">Dashboard</a>
+      <a class="here" href="library.html">Library</a>
+      <a class="hide-sm" href="../search.html">Browse</a>
+      <a class="hide-sm" href="../reviews.html">Reviews</a>
+      <a class="btn solid" href="publish.html">Publish</a>
+      <a href="editProfile.html" title="Settings"><span class="avatar-sm">DM</span></a>
+    </nav>
+  </div>
+</header>
+ 
+<!-- ===== PAGE HEAD ===== -->
+<section class="lhead">
+  <div class="wrap">
+    <h1>Your library</h1>
+    <div class="line">Everything you've bought is yours to keep and re-download, forever. Every title here put real money in a real writer's hands &mdash; thank you for that.</div>
+    <div class="support">
+      <div class="s"><div class="num">6</div><div class="lab">Works owned</div></div>
+      <div class="s"><div class="num em">5</div><div class="lab">Writers supported</div></div>
+      <div class="s"><div class="num">$31</div><div class="lab">Paid to writers</div></div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===== TABS ===== -->
+<div class="wrap">
+  <div class="tabs">
+    <a class="tab active" href="library.html">All</a>
+    <a class="tab" href="library.html">Purchased</a>
+    <a class="tab" href="library.html">Free &amp; saved</a>
+  </div>
+</div>
+ 
+<!-- ===== LIBRARY ===== -->
+<section class="wrap lib">
+ 
+  <!-- ITEM (purchased) -->
+  <div class="item">
+    <a href="../bookDetail.html" class="cover"><span class="ph">Small Systems,<br>Big Patience</span></a>
+    <div class="meta">
+      <div class="wtype">Technology &middot; Essays</div>
+      <a href="../bookDetail.html" class="wtitle">Small Systems, Big Patience</a>
+      <div class="wauthor">by <a href="../memberProfile.html">Devraj Menon</a></div>
+      <div class="bought">Bought 12 June 2026 &middot; $4.50</div>
+    </div>
+    <div class="act">
+      <button class="btn solid" type="button">Download</button>
+      <span class="formats">PDF &middot; EPUB</span>
+    </div>
+  </div>
+ 
+  <!-- ITEM (purchased) -->
+  <div class="item">
+    <a href="../bookDetail.html" class="cover"><span class="ph">The Salt<br>in the Letter</span></a>
+    <div class="meta">
+      <div class="wtype">Literary Fiction</div>
+      <a href="../bookDetail.html" class="wtitle">The Salt in the Letter</a>
+      <div class="wauthor">by <a href="../memberProfile.html">Ayanna Okeb-Hart</a></div>
+      <div class="bought">Bought 8 June 2026 &middot; $6.00</div>
+    </div>
+    <div class="act">
+      <button class="btn solid" type="button">Download</button>
+      <span class="formats">PDF &middot; EPUB</span>
+    </div>
+  </div>
+ 
+  <!-- ITEM (free/saved) -->
+  <div class="item">
+    <a href="../bookDetail.html" class="cover"><span class="ph">Field Notes<br>from the<br>Night Shift</span></a>
+    <div class="meta">
+      <div class="wtype">Memoir &middot; Short Reads</div>
+      <a href="../bookDetail.html" class="wtitle">Field Notes from the Night Shift</a>
+      <div class="wauthor">by <a href="../memberProfile.html">Carmen Ruiz-Adler</a></div>
+      <div class="bought">Saved 5 June 2026 &middot; Free</div>
+    </div>
+    <div class="act">
+      <button class="btn solid" type="button">Download</button>
+      <span class="formats">PDF</span>
+    </div>
+  </div>
+ 
+  <!-- ITEM (purchased) -->
+  <div class="item">
+    <a href="../bookDetail.html" class="cover"><span class="ph">A Short History<br>of Almost<br>Quitting</span></a>
+    <div class="meta">
+      <div class="wtype">Biography &middot; Memoir</div>
+      <a href="../bookDetail.html" class="wtitle">A Short History of Almost Quitting</a>
+      <div class="wauthor">by <a href="../memberProfile.html">Marcus Bell</a></div>
+      <div class="bought">Bought 28 May 2026 &middot; $5.00</div>
+    </div>
+    <div class="act">
+      <button class="btn solid" type="button">Download</button>
+      <span class="formats">PDF &middot; EPUB</span>
+    </div>
+  </div>
+ 
+  <!-- ITEM (purchased) -->
+  <div class="item">
+    '<a href="../bookDetail.html?id=' + b.id + '" class="cover">' + coverHtml(b) + '</a>' +
+    <div class="meta">
+      <div class="wtype">Poetry</div>
+      <a href="../bookDetail.html" class="wtitle">Tidewrack</a>
+      <div class="wauthor">by <a href="../memberProfile.html">Lena Fairburn</a></div>
+      <div class="bought">Bought 19 May 2026 &middot; $2.50</div>
+    </div>
+    <div class="act">
+      <button class="btn solid" type="button">Download</button>
+      <span class="formats">PDF &middot; EPUB</span>
+    </div>
+  </div>
+ 
+  <!--
+    EMPTY STATE (backend shows this instead when library is empty):
+    <div class="empty">
+      <h3>Your shelf is empty &mdash; for now.</h3>
+      <p>The first book you buy here doesn't just fill a shelf. It tells a writer their work was worth it. Go find one worth keeping.</p>
+      <a class="btn solid" href="../search.html">Discover something</a>
+    </div>
+  -->
+</section>
+ 
+<!-- ===== CLOSING ===== -->
+<section class="closing">
+  <div class="wrap">
+    <p>&ldquo;Every book you buy here is a quiet vote for the kind of writing that deserves to exist. Keep reading bravely.&rdquo;</p>
+  </div>
+</section>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div>
+        <a href="../search.html">Browse</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/terms.html">Terms</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/report.html">Report something</a>
+      </div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+
+  // Fill the nav avatar with the member's real photo or initials.
+(async () => {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) return;
+    const me = await res.json();
+    const av = document.querySelector('.avatar-sm');
+    if (!av) return;
+    if (me.avatar_key && me.avatar_key !== 'none') {
+      av.innerHTML = '<img src="/' + me.avatar_key + '" alt="You" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+      av.style.overflow = 'hidden';
+    } else {
+      av.textContent = (me.display_name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+  } catch (e) {}
+})();
+  const lib = document.querySelector('.lib');
+  if (!lib) return;
+
+  function priceLabel(cents) { return cents === 0 ? 'Free' : '$' + (cents / 100).toFixed(2); }
+  function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+  function coverHtml(b) {
+    if (b.cover_key && b.cover_key !== 'none' && b.cover_key !== 'pending') {
+      return '<img src="/' + b.cover_key + '" alt="' + esc(b.title) + '" style="width:100%;height:100%;object-fit:cover;display:block">';
+    }
+    return '<span class="ph">' + esc(b.title) + '</span>';
+  }
+  function boughtDate(dateStr) {
+    const d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    return d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  let allBooks = [];
+  let currentFilter = 'all';
+
+  function render() {
+    let books = allBooks;
+    if (currentFilter === 'purchased') books = allBooks.filter(b => b.paid_cents > 0);
+    if (currentFilter === 'saved')     books = allBooks.filter(b => b.paid_cents === 0);
+
+    lib.innerHTML = '';
+
+    if (books.length === 0) {
+      const msg = currentFilter === 'all'
+        ? 'Your shelf is empty &mdash; for now.'
+        : (currentFilter === 'purchased' ? 'No purchased works yet.' : 'No free works saved yet.');
+      lib.innerHTML =
+        '<div class="empty"><h3>' + msg + '</h3>' +
+        '<p>Every book here tells a writer their work was worth it. Go find one worth keeping.</p>' +
+        '<a class="btn solid" href="../search.html">Discover something</a></div>';
+      return;
+    }
+
+    for (const b of books) {
+      const verb = b.paid_cents === 0 ? 'Saved' : 'Bought';
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML =
+        '<a href="../bookDetail.html?id=' + b.id + '" class="cover">' + coverHtml(b) + '</a>' +
+        '<div class="meta">' +
+          '<div class="wtype">' + esc(b.content_type) + '</div>' +
+          '<a href="../bookDetail.html?id=' + b.id + '" class="wtitle">' + esc(b.title) + '</a>' +
+          '<div class="wauthor">by <a href="../memberProfile.html?handle=' + b.handle + '">' + esc(b.publisher) + '</a></div>' +
+          '<div class="bought">' + verb + ' ' + boughtDate(b.purchased_at) + ' &middot; ' + priceLabel(b.paid_cents) + '</div>' +
+        '</div>' +
+        '<div class="act">' +
+          '<a class="btn solid" href="/download/' + b.id + '">Download</a>' +
+          '<span class="formats">PDF</span>' +
+        '</div>';
+      lib.appendChild(item);
+    }
+  }
+
+  const tabs = document.querySelectorAll('.tabs .tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const label = tab.textContent.trim().toLowerCase();
+      currentFilter = label === 'purchased' ? 'purchased'
+                    : (label.includes('free') || label.includes('saved')) ? 'saved'
+                    : 'all';
+      render();
+    });
+  });
+
+  try {
+    const res = await fetch('/api/my-library');
+    if (!res.ok) { window.location.href = '/login.html'; return; }
+    allBooks = await res.json();
+
+    const paid = allBooks.filter(b => b.paid_cents > 0);
+    const totalPaid = paid.reduce((sum, b) => sum + b.paid_cents, 0);
+    const writers = new Set(allBooks.map(b => b.handle)).size;
+    const statNums = document.querySelectorAll('.support .s .num');
+    if (statNums[0]) statNums[0].textContent = allBooks.length;
+    if (statNums[1]) statNums[1].textContent = writers;
+    if (statNums[2]) statNums[2].textContent = '$' + (totalPaid / 100).toFixed(2);
+
+    render();
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('purchased')) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:var(--pine);color:var(--paper);padding:var(--space-4) var(--space-6);border-radius:var(--radius);margin:0 0 var(--space-6);font-size:var(--size-sm)';
+      banner.innerHTML = '&#10003; Added to your library &mdash; yours to re-download anytime.';
+      lib.parentElement.insertBefore(banner, lib);
+    }
+  } catch (err) {
+    console.error('Could not load library:', err);
+  }
+});
+</script>
+
+</body>
+</html>

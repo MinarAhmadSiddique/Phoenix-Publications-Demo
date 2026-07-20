@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your dashboard &middot; Phoenix Publications</title>
+<!-- NOTE: this page lives in /members/, so all paths use ../ -->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* ============================================================
+     MEMBER DASHBOARD (members/dashboard.html) — internal CSS.
+     The writer's home: how their work is doing. Encouraging tone
+     that makes progress feel real even when numbers are small.
+     Honest earnings math (gross - 4% - processing = net).
+     Design only, no JS. Sample data throughout.
+     Paths use ../ because this file is one folder deep.
+     ============================================================ */
+ 
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+ 
+  /* ---- top bar (member version: shows account links) ---- */
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a.here { opacity: 1; color: var(--ember); font-weight: 500; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
+  .btn:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+  .avatar-sm { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: var(--size-xs); color: var(--paper); }
+ 
+  /* ---- greeting ---- */
+  .greet { padding: var(--space-16) 0 var(--space-8); }
+  .greet .hi { font-size: var(--size-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ember); font-weight: 600; margin-bottom: var(--space-4); }
+  .greet h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-3); }
+  /* the encouraging line — speaks to progress, not just stats */
+  .greet .line { font-family: var(--font-display); font-style: italic; font-size: var(--size-lg); color: var(--ink); opacity: 0.85; max-width: 60ch; }
+ 
+  /* ---- stat cards ---- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6); padding-bottom: var(--space-12); }
+  .stat { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-6); background: var(--paper); }
+  .stat .k { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone); margin-bottom: var(--space-3); }
+  .stat .v { font-family: var(--font-display); font-size: var(--size-3xl); font-weight: 600; line-height: 1; margin-bottom: var(--space-2); }
+  .stat .n { font-size: var(--size-xs); color: var(--stone); }
+  .stat .n.up { color: var(--pine); }
+  .stat.earn { background: var(--ink); border-color: var(--ink); }
+  .stat.earn .k { color: rgba(251,249,244,0.6); }
+  .stat.earn .v { color: var(--paper); }
+  .stat.earn .n { color: var(--ember); }
+ 
+  /* ---- earnings breakdown (honest math) ---- */
+  .panel { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-8); margin-bottom: var(--space-12); background: var(--paper); }
+  .panel h2 { font-size: var(--size-xl); margin-bottom: var(--space-2); }
+  .panel .psub { font-size: var(--size-sm); color: var(--stone); margin-bottom: var(--space-8); }
+  .ledger { max-width: 480px; }
+  .ledger .lrow { display: flex; justify-content: space-between; padding: var(--space-3) 0; font-size: var(--size-base); border-bottom: 1px solid var(--line); }
+  .ledger .lrow .lk { color: var(--ink); opacity: 0.85; }
+  .ledger .lrow .lv { font-weight: 500; }
+  .ledger .lrow.minus .lv { color: var(--stone); }
+  .ledger .lrow.net { border-bottom: none; padding-top: var(--space-5); }
+  .ledger .lrow.net .lk { font-weight: 600; font-family: var(--font-display); font-size: var(--size-lg); }
+  .ledger .lrow.net .lv { font-weight: 600; font-family: var(--font-display); font-size: var(--size-lg); color: var(--pine); }
+  .payout { margin-top: var(--space-6); font-size: var(--size-sm); color: var(--stone); display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+ 
+  /* ---- share your work panel ---- */
+  .share-panel { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-8); margin-bottom: var(--space-12); background: var(--paper); }
+  .share-panel .stop { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-6); flex-wrap: wrap; margin-bottom: var(--space-2); }
+  .share-panel h2 { font-size: var(--size-xl); }
+  .share-panel .proof { font-size: var(--size-sm); color: var(--pine); font-weight: 500; }
+  .share-panel .psub { font-family: var(--font-display); font-style: italic; font-size: var(--size-lg); color: var(--ink); opacity: 0.85; max-width: 58ch; margin-bottom: var(--space-8); }
+  .share-link { display: flex; gap: var(--space-3); max-width: 560px; margin-bottom: var(--space-6); }
+  .share-link input { flex: 1; font-family: var(--font-body); font-size: var(--size-sm); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper-2); color: var(--ink); }
+  .share-link input:focus { outline: none; border-color: var(--ember); }
+  .share-btns { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+  .sbtn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-5); border: 1px solid var(--line); border-radius: 100px; background: var(--paper); color: var(--ink); cursor: pointer; transition: border-color .15s, color .15s; }
+  .sbtn:hover { border-color: var(--ember); color: var(--ember); text-decoration: none; }
+  .share-panel .keep { margin-top: var(--space-6); font-size: var(--size-xs); color: var(--stone); line-height: 1.6; max-width: 60ch; }
+ 
+  /* ---- works table ---- */
+  .works { margin-bottom: var(--space-16); }
+  .works .whead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-6); gap: var(--space-4); }
+  .works h2 { font-size: var(--size-xl); }
+  .wtable { width: 100%; border-collapse: collapse; }
+  .wtable th { text-align: left; font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone); font-weight: 600; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line); }
+  .wtable th.num, .wtable td.num { text-align: right; }
+  .wtable td { padding: var(--space-4); border-bottom: 1px solid var(--line); font-size: var(--size-sm); vertical-align: middle; }
+  .wtable .title { font-weight: 600; font-family: var(--font-display); font-size: var(--size-base); }
+  .wtable .title a:hover { color: var(--ember); text-decoration: none; }
+  .badge { font-size: var(--size-xs); padding: 2px var(--space-2); border-radius: var(--radius); font-weight: 600; letter-spacing: 0.02em; }
+  .badge.live { background: var(--paper-2); color: var(--pine); }
+  .badge.pending { background: var(--paper-2); color: var(--stone); }
+  .badge.featured { background: var(--ember); color: var(--paper); }
+  .wtable .mini { font-size: var(--size-xs); color: var(--stone); }
+  .rowact a { font-size: var(--size-xs); color: var(--pine); }
+ 
+  /* ---- empty state for no works (encouraging) ---- */
+  .empty { border: 1px dashed var(--line); border-radius: var(--radius); padding: var(--space-16); text-align: center; }
+  .empty h3 { font-size: var(--size-xl); margin-bottom: var(--space-3); }
+  .empty p { color: var(--stone); max-width: 46ch; margin: 0 auto var(--space-6); }
+ 
+  /* ---- encouraging footer note ---- */
+  .closing { border-top: 1px solid var(--line); padding: var(--space-12) 0; text-align: center; }
+  .closing p { font-family: var(--font-display); font-style: italic; font-size: var(--size-lg); color: var(--ink); opacity: 0.8; max-width: 56ch; margin: 0 auto; }
+ 
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row .brand { font-size: var(--size-base); }
+  .foot-row a { color: var(--stone); }
+ 
+  @media (max-width: 880px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .greet h1 { font-size: var(--size-2xl); }
+    nav.main .hide-sm { display: none; }
+    .wtable thead { display: none; }
+    .wtable, .wtable tbody, .wtable tr, .wtable td { display: block; width: 100%; }
+    .wtable tr { border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: var(--space-4); padding: var(--space-2); }
+    .wtable td { border: none; padding: var(--space-2) var(--space-4); }
+    .wtable td.num { text-align: left; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ===== TOP BAR (member) ===== -->
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="here" href="dashboard.html">Dashboard</a>
+      <a class="hide-sm" href="library.html">Library</a>
+      <a class="hide-sm" href="../search.html">Browse</a>
+      <a class="hide-sm" href="../reviews.html">Reviews</a>
+      <a class="btn solid" href="publish.html">Publish</a>
+      <a href="editProfile.html" title="Settings"><span class="avatar-sm">DM</span></a>
+    </nav>
+  </div>
+</header>
+ 
+<!-- ===== GREETING ===== -->
+<section class="greet">
+  <div class="wrap">
+    <div class="hi">Welcome back, Devraj</div>
+    <h1>Your work is out in the world.</h1>
+    <div class="line">Three pieces published, and people are reading them right now. Every reader is someone who'd never have found you a year ago. That's not nothing &mdash; that's the whole point.</div>
+  </div>
+</section>
+ 
+<!-- ===== STAT CARDS ===== -->
+<section class="wrap">
+  <div class="stats">
+    <div class="stat">
+      <div class="k">Published works</div>
+      <div class="v">3</div>
+      <div class="n up">1 chosen by Phoenix</div>
+    </div>
+    <div class="stat">
+      <div class="k">Readers reached</div>
+      <div class="v">312</div>
+      <div class="n up"></div>
+    </div>
+    <div class="stat">
+      <div class="k">Followers</div>
+      <div class="v">128</div>
+      <div class="n up">+14 this month</div>
+    </div>
+    <div class="stat earn">
+      <div class="k">Earned (net)</div>
+      <div class="v">$214</div>
+      <div class="n">ready to pay out</div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===== EARNINGS BREAKDOWN (honest math) ===== -->
+<section class="wrap">
+  <div class="panel">
+    <h2>Where your money goes</h2>
+    <div class="psub">No surprises &mdash; here's every cent, in the open. This is the deal we promised you.</div>
+    <div class="ledger">
+      <div class="lrow"><span class="lk">Your sales (47 copies)</span><span class="lv">$248.00</span></div>
+      <div class="lrow minus"><span class="lk">Payment processing (Stripe)</span><span class="lv">&minus; $24.10</span></div>
+      <div class="lrow minus"><span class="lk">Phoenix commission (4%)</span><span class="lv">&minus; $9.92</span></div>
+      <div class="lrow net"><span class="lk">Yours to keep</span><span class="lv">$213.98</span></div>
+    </div>
+    <div class="payout">
+      <button class="btn solid" type="button">Set up payouts</button>
+      <span>Connect a Stripe account to receive your earnings. You're always paid directly &mdash; Phoenix never holds your money.</span>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===== SHARE YOUR WORK ===== -->
+<section class="wrap">
+  <div class="share-panel">
+    <div class="stop">
+      <h2>This is your name. Put it out there.</h2>
+    </div>
+    <div class="psub">No one tells your story better than you. Every share is your name in the world, your reputation growing, your readers learning you exist. This is your stage &mdash; step onto it.</div>
+ 
+    <!-- ready-to-copy link (sample) -->
+    <div class="share-link">
+      <input type="text" value="https://phoenixpublications.com/devrajmenon" readonly aria-label="Your link">
+      <button class="btn solid" type="button">Copy my link</button>
+    </div>
+ 
+    <!-- one-tap share to the platforms writers actually use -->
+    <div class="share-btns">
+      <a class="sbtn" href="#">Announce on X</a>
+      <a class="sbtn" href="#">Share on LinkedIn</a>
+      <a class="sbtn" href="#">Post to Facebook</a>
+      <a class="sbtn" href="#">Send on WhatsApp</a>
+      <a class="sbtn" href="#">Copy a blurb</a>
+    </div>
+ 
+    <div class="keep">The readers you bring in yourself remember <em>your</em> name. This is how writers become known &mdash; not by waiting to be discovered, but by letting the world meet them. You've earned the right to be seen. Use it.</div>
+  </div>
+</section>
+ 
+<!-- ===== YOUR WORKS ===== -->
+<section class="wrap works">
+  <div class="whead">
+    <h2>Your works</h2>
+    <a class="btn" href="publish.html">+ Publish something new</a>
+  </div>
+  <table class="wtable">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Status</th>
+        <th class="num">Readers</th>
+        <th class="num">Likes</th>
+        <th class="num">Earned</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="title"><a href="../bookDetail.html">Small Systems, Big Patience</a> <span class="mini">&middot; Technology</span></td>
+        <td><span class="badge featured">Featured</span></td>
+        <td class="num">186</td>
+        <td class="num">86</td>
+        <td class="num">$162.00</td>
+        <td class="rowact"><a href="#">Edit</a></td>
+      </tr>
+      <tr>
+        <td class="title"><a href="../bookDetail.html">The Quiet Deploy</a> <span class="mini">&middot; Technology</span></td>
+        <td><span class="badge live">On the shelf</span></td>
+        <td class="num">73</td>
+        <td class="num">34</td>
+        <td class="num">$52.00</td>
+        <td class="rowact"><a href="#">Edit</a></td>
+      </tr>
+      <tr>
+        <td class="title"><a href="../bookDetail.html">Notes to a Junior Self</a> <span class="mini">&middot; Short Reads</span></td>
+        <td><span class="badge live">On the shelf</span></td>
+        <td class="num">153</td>
+        <td class="num">153</td>
+        <td class="num">Free</td>
+        <td class="rowact"><a href="#">Edit</a></td>
+      </tr>
+      <tr>
+        <td class="title"><a href="#">Untitled draft</a> <span class="mini">&middot; not yet submitted</span></td>
+        <td><span class="badge pending">In review</span></td>
+        <td class="num">&mdash;</td>
+        <td class="num">&mdash;</td>
+        <td class="num">&mdash;</td>
+        <td class="rowact"><a href="#">Continue</a></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+ 
+<!-- ===== CLOSING ENCOURAGEMENT ===== -->
+<section class="closing">
+  <div class="wrap">
+    <p>&ldquo;The next piece doesn't have to be perfect. It just has to be yours. We'll help the right readers find it.&rdquo;</p>
+  </div>
+</section>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div>
+        <a href="../search.html">Browse</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/terms.html">Terms</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/report.html">Report something</a>
+      </div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  // Author remove from the works table.
+  const wtable = document.querySelector('.wtable tbody');
+  if (wtable) {
+    wtable.addEventListener('click', async (e) => {
+      const id = e.target.getAttribute('data-remove');
+      if (!id) return;
+      e.preventDefault();
+      if (!confirm('Remove this work?\n\nIf no one has bought it, it will be permanently deleted. If it has buyers, it comes off public display but they keep their copies.')) return;
+      try {
+        const r = await fetch('/api/my-book/' + id + '/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+        const d = await r.json();
+        if (r.ok) {
+          alert(d.deleted ? 'Permanently deleted (no purchases).' : 'Off public display. Buyers keep their copies.');
+          window.location.reload();
+        } else { alert(d.error || 'Could not remove.'); }
+      } catch (err) { alert('Something went wrong.'); }
+    });
+  }
+  // --- Share panel ---
+  try {
+    const meRes = await fetch('/api/me');
+    if (meRes.ok) {
+      const me = await meRes.json();
+      const profileUrl = window.location.origin + '/memberProfile.html?handle=' + encodeURIComponent(me.handle);
+      const shareText = encodeURIComponent('Read my work on Phoenix Publications');
+      const blurb = me.display_name + ' on Phoenix Publications — ' + profileUrl;
+      const encodedUrl = encodeURIComponent(profileUrl);
+
+      // Fill the link input.
+      const linkInput = document.querySelector('.share-link input');
+      if (linkInput) linkInput.value = profileUrl;
+
+      // Copy my link button.
+      const copyBtn = document.querySelector('.share-link .btn');
+      if (copyBtn && linkInput) {
+        copyBtn.addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(profileUrl); }
+          catch (e) { linkInput.select(); document.execCommand('copy'); }
+          copyBtn.textContent = 'Copied ✓';
+          setTimeout(() => { copyBtn.textContent = 'Copy my link'; }, 1500);
+        });
+      }
+
+      // Social share buttons (match by their text).
+      const sbtns = document.querySelectorAll('.share-btns .sbtn');
+      sbtns.forEach(btn => {
+        const label = btn.textContent.toLowerCase();
+        if (label.includes('x')) {
+          btn.href = 'https://twitter.com/intent/tweet?text=' + shareText + '&url=' + encodedUrl;
+          btn.target = '_blank'; btn.rel = 'noopener';
+        } else if (label.includes('linkedin')) {
+          btn.href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodedUrl;
+          btn.target = '_blank'; btn.rel = 'noopener';
+        } else if (label.includes('facebook')) {
+          btn.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl;
+          btn.target = '_blank'; btn.rel = 'noopener';
+        } else if (label.includes('whatsapp')) {
+          btn.href = 'https://wa.me/?text=' + shareText + '%20' + encodedUrl;
+          btn.target = '_blank'; btn.rel = 'noopener';
+        } else if (label.includes('blurb')) {
+          // "Copy a blurb" — copies a ready-made sentence instead of navigating.
+          btn.href = '#';
+          btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try { await navigator.clipboard.writeText(blurb); }
+            catch (err) {}
+            const orig = btn.textContent;
+            btn.textContent = 'Blurb copied ✓';
+            setTimeout(() => { btn.textContent = orig; }, 1500);
+          });
+        }
+      });
+    }
+  } catch (err) { console.error('share panel:', err); }
+  function statusBadge(status) {
+    if (status === 'live')     return '<span class="badge live">On the shelf</span>';
+    if (status === 'featured') return '<span class="badge featured">Featured</span>';
+    if (status === 'rejected') return '<span class="badge pending">Not accepted</span>';
+    if (status === 'removed')  return '<span class="badge pending">Removed</span>';
+    return '<span class="badge pending">In review</span>';
+  }
+  function priceLabel(cents) { return cents === 0 ? 'Free' : '$' + (cents / 100).toFixed(2); }
+  function money(cents) { return '$' + (cents / 100).toFixed(2); }
+
+  // --- Real dashboard stats ---
+  try {
+    const res = await fetch('/api/dashboard');
+    if (res.ok) {
+      const d = await res.json();
+      const hi = document.querySelector('.greet .hi');
+      if (hi) hi.textContent = 'Welcome back, ' + (d.display_name || '').split(' ')[0];
+
+      const stats = document.querySelectorAll('.stats .stat .v');
+      if (stats[0]) stats[0].textContent = d.works;
+      if (stats[1]) stats[1].textContent = d.readers;
+      if (stats[2]) stats[2].textContent = d.followers;
+      if (stats[3]) stats[3].textContent = money(d.earned_cents);
+
+      // sub-notes
+      const notes = document.querySelectorAll('.stats .stat .n');
+      if (notes[0]) notes[0].textContent = d.featured + (d.featured === 1 ? ' chosen by Phoenix' : ' chosen by Phoenix');
+
+      // Make Followers card show Followers + Following as clickable links.
+      const followerCard = document.querySelectorAll('.stats .stat')[2];
+      if (followerCard) {
+        followerCard.style.cursor = 'default';
+        followerCard.innerHTML =
+          '<div class="k">Community</div>' +
+          '<div style="display:flex; gap:var(--space-6); margin-top:var(--space-1)">' +
+            '<a href="connections.html?tab=followers" style="text-decoration:none">' +
+              '<div class="v" style="font-size:var(--size-2xl)">' + d.followers + '</div>' +
+              '<div class="n" style="color:var(--ember)">Followers</div>' +
+            '</a>' +
+            '<a href="connections.html?tab=following" style="text-decoration:none">' +
+              '<div class="v" style="font-size:var(--size-2xl)">' + d.following + '</div>' +
+              '<div class="n" style="color:var(--ember)">Following</div>' +
+            '</a>' +
+          '</div>';
+      }
+    }
+  } catch (err) { console.error('dashboard stats:', err); }
+// Fill the nav avatar with the member's real photo or initials.
+(async () => {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) return;
+    const me = await res.json();
+    const av = document.querySelector('.avatar-sm');
+    if (!av) return;
+    if (me.avatar_key && me.avatar_key !== 'none') {
+      av.innerHTML = '<img src="/' + me.avatar_key + '" alt="You" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+      av.style.overflow = 'hidden';
+    } else {
+      av.textContent = (me.display_name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+  } catch (e) {}
+})();
+  // --- Works table ---
+  const tbody = document.querySelector('.wtable tbody');
+  if (tbody) {
+    try {
+      const res = await fetch('/api/my-books');
+      const books = await res.json();
+      tbody.innerHTML = '';
+      if (books.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--stone); padding:var(--space-8)">You haven\'t published anything yet. <a href="publish.html">Publish your first work</a>.</td></tr>';
+      } else {
+        for (const b of books) {
+          const readers = (b.readers != null) ? b.readers : '—';
+          const earned = (b.earned_cents != null) ? (b.price_cents === 0 ? 'Free' : money(b.earned_cents)) : '—';
+          const tr = document.createElement('tr');
+       tr.innerHTML =
+        '<td class="title"><a href="../bookDetail.html?id=' + b.id + '">' + b.title + '</a>' +
+          (b.category ? ' <span class="mini">&middot; ' + b.category + '</span>' : '') + '</td>' +
+        '<td>' + statusBadge(b.status) + '</td>' +
+        '<td class="num">' + (b.readers != null ? b.readers : '—') + '</td>' +
+        '<td class="num">' + b.likes + '</td>' +
+        '<td class="num">' + (b.price_cents === 0 ? 'Free' : (b.earned_cents != null ? '$' + (b.earned_cents/100).toFixed(2) : '—')) + '</td>' +
+        '<td class="rowact">' +
+          '<a href="../bookDetail.html?id=' + b.id + '">View</a> ' +
+          '<a href="editBook.html?id=' + b.id + '">Edit</a> ' +
+          '<a href="#" data-remove="' + b.id + '" style="color:var(--ember)">Remove</a>' +
+        '</td>';
+      tbody.appendChild(tr);
+        }
+      }
+    } catch (err) { console.error('Could not load your books:', err); }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,525 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phoenix Publications — work worth finding</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  /* ============================================================
+     HOME — internal CSS. Uses brand variables from tokens.css.
+     Concept: "the gallery, not the warehouse." Space signals
+     that what's here was chosen. Ember only on chosen things.
+     ============================================================ */
+ 
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+ 
+  /* ---- Top bar ---- */
+  header.top {
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(251,249,244,0.85);
+    backdrop-filter: blur(8px);
+  }
+  .top-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-6);
+  }
+  .brand {
+    font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg);
+    letter-spacing: -0.01em; color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2);
+  }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn {
+    font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500;
+    padding: var(--space-2) var(--space-4); border-radius: var(--radius);
+    border: 1px solid var(--ink); background: transparent; color: var(--ink);
+    cursor: pointer; transition: background .15s, color .15s;
+  }
+  .btn:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+ 
+  /* ---- Hero: the thesis ---- */
+  .hero { padding: var(--space-24) 0 var(--space-16); border-bottom: 1px solid var(--line); }
+  .hero .eyebrow {
+    font-size: var(--size-xs); letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ember); font-weight: 600; margin-bottom: var(--space-6);
+  }
+  .hero h1 {
+    font-size: var(--size-hero); font-weight: 600; letter-spacing: -0.02em;
+    max-width: 14ch; margin-bottom: var(--space-6);
+  }
+  .hero h1 em { font-style: italic; color: var(--ember); }
+  .hero p.lede {
+    font-size: var(--size-lg); color: var(--ink); opacity: 0.78; max-width: 52ch;
+    margin-bottom: var(--space-8); line-height: 1.5;
+  }
+  .hero .cta-row { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
+  .hero .cta-note { font-size: var(--size-sm); color: var(--stone); }
+ 
+  /* ---- Section heading ---- */
+  .section { padding: var(--space-16) 0; }
+  .sec-head { display: flex; align-items: end; justify-content: space-between; margin-bottom: var(--space-12); gap: var(--space-6); }
+  .sec-head h2 { font-size: var(--size-2xl); letter-spacing: -0.01em; }
+  .sec-head .sub { font-size: var(--size-sm); color: var(--stone); margin-top: var(--space-2); }
+  .sec-head a.more { font-size: var(--size-sm); color: var(--pine); white-space: nowrap; }
+ 
+  /* ---- The curator's pick: the signature element ---- */
+  .pick {
+    display: grid; grid-template-columns: 200px 1fr; gap: var(--space-8);
+    padding: var(--space-8) 0; border-top: 1px solid var(--line); align-items: start;
+  }
+  .pick:last-child { border-bottom: 1px solid var(--line); }
+  .pick .cover {
+    width: 200px; height: 290px; border-radius: var(--radius);
+    background: linear-gradient(150deg, var(--pine), var(--ink));
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pick .cover .ph {
+    font-family: var(--font-display); color: rgba(251,249,244,0.85);
+    font-size: var(--size-lg); padding: var(--space-6); text-align: center; line-height: 1.25;
+  }
+  .pick:nth-child(2) .cover { background: linear-gradient(150deg, var(--ember), #6e2417); }
+  .pick:nth-child(4) .cover { background: linear-gradient(150deg, #4a4036, var(--ink)); }
+ 
+  .pick .meta { padding-top: var(--space-2); }
+  .pick .type-tag {
+    font-size: var(--size-xs); letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--stone); font-weight: 600; margin-bottom: var(--space-3);
+  }
+  .pick h3 { font-size: var(--size-xl); letter-spacing: -0.01em; margin-bottom: var(--space-2); }
+  .pick .byline { font-size: var(--size-sm); color: var(--ink); opacity: 0.7; margin-bottom: var(--space-6); }
+  .pick .byline a { color: var(--pine); }
+ 
+  /* the placard — the curator's note, treated like a gallery wall label */
+  .placard {
+    border-left: 2px solid var(--ember); padding: var(--space-1) 0 var(--space-1) var(--space-6);
+    margin-bottom: var(--space-6); max-width: 60ch;
+  }
+  .placard .who {
+    font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ember); font-weight: 600; margin-bottom: var(--space-2);
+  }
+  .placard p {
+    font-family: var(--font-display); font-size: var(--size-lg); font-style: italic;
+    line-height: 1.45; margin: 0; color: var(--ink);
+  }
+  .pick .foot { display: flex; align-items: center; gap: var(--space-6); margin-top: var(--space-4); }
+  .pick .price { font-weight: 600; font-size: var(--size-base); }
+  .pick .price.free { color: var(--pine); }
+ 
+  /* ---- Browse-by strip (only AFTER the curation — discovery, not the front door) ---- */
+  .browse-strip { background: var(--paper-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .browse-strip .inner { padding: var(--space-16) 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
+  .chip {
+    font-size: var(--size-sm); padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--line); border-radius: 100px; background: var(--paper);
+    color: var(--ink); cursor: pointer; transition: border-color .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--ember); color: var(--ember); text-decoration: none; }
+ 
+  /* ---- Channels: the owned distribution, stated plainly ---- */
+  .channels { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-8); }
+  .channel {
+    padding: var(--space-8); border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--paper);
+  }
+  .channel h3 { font-size: var(--size-lg); margin-bottom: var(--space-3); }
+  .channel p { color: var(--ink); opacity: 0.75; font-size: var(--size-sm); margin: 0 0 var(--space-6); }
+ 
+  /* ---- Footer ---- */
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-16) 0 var(--space-12); margin-top: var(--space-8); }
+  .foot-grid { display: flex; justify-content: space-between; gap: var(--space-8); flex-wrap: wrap; }
+  .foot .brand { margin-bottom: var(--space-4); }
+  .foot .cols { display: flex; gap: var(--space-16); flex-wrap: wrap; }
+  .foot .col h4 { font-family: var(--font-body); font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--stone); margin-bottom: var(--space-4); font-weight: 600; }
+  .foot .col a { display: block; font-size: var(--size-sm); color: var(--ink); opacity: 0.8; margin-bottom: var(--space-3); }
+  .foot .legal { margin-top: var(--space-12); font-size: var(--size-xs); color: var(--stone); display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+  .foot .legal a { color: var(--stone); }
+ 
+  /* ---- Responsive ---- */
+  @media (max-width: 820px) {
+    .hero h1 { font-size: var(--size-3xl); }
+    .hero { padding: var(--space-16) 0 var(--space-12); }
+    .pick { grid-template-columns: 1fr; }
+    .pick .cover { width: 140px; height: 200px; }
+    .pick .cover .ph { font-size: var(--size-base); }
+    .channels { grid-template-columns: 1fr; }
+    nav.main .hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ===================== TOP BAR ===================== -->
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+      <a class="hide-sm" href="search.html">Browse</a>
+      <a href="login.html">Log in</a>
+      <a class="btn solid" href="signup.html">Join Phoenix</a>
+    </nav>
+  </div>
+</header>
+ 
+<!-- ===================== HERO: THE THESIS ===================== -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">For writers who deserve to be read</div>
+    <h1>You wrote it. Let's get it <em>found.</em></h1>
+    <p class="lede">Good work deserves to be read &mdash; and yours can be. You don't need a publisher's permission or a famous name to start. Bring what you've made to Phoenix, and if it's good, we'll put it in front of the readers who've been looking for exactly this.</p>
+    <div class="cta-row">
+      <a class="btn solid" href="login.html">Publish your work</a>
+      <a class="btn" href="login.html">See what we're reading</a>
+      <span class="cta-note">You set the price. We take 4%, plus standard payment processing &mdash; and we show you the exact math before you publish.</span>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===================== CURATOR'S PICKS: THE SIGNATURE ===================== -->
+<!--
+  ============================================================
+  FEATURED SECTION — DATA-DRIVEN (do NOT hardcode in production)
+  In the Node/backend phase, this list is generated by looping
+  over rows from:  featured  JOIN  books  JOIN  members
+  ordered by featured.position WHERE (featured_until IS NULL OR
+  featured_until > now) AND books.status = 'live'.
+ 
+  Each <article class="pick"> below is ONE row of that loop.
+  The values shown here are SAMPLE PLACEHOLDER DATA only.
+ 
+  Field mapping per pick:
+    .cover            <- books.cover_key   (Blob image; gradient is fallback)
+    .type-tag         <- content_types.name + " / " + categories.name
+    h3                <- books.title
+    .byline a (text)  <- members.display_name
+    .byline a (href)  <- memberProfile.html?id={members.id}
+    .placard p        <- featured.curator_note
+    .price            <- books.price_cents  (format cents -> $X.XX; 0 = "Free")
+    .foot a (href)    <- bookDetail.html?id={books.id}
+  ============================================================
+-->
+<section class="section">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>This week's picks</h2>
+        <div class="sub">Chosen by hand &mdash; not by an algorithm, not by who paid for a spot. Some of these writers you've never heard of. That's the point.</div>
+      </div>
+      <a class="more" href="search.html">All featured &rarr;</a>
+    </div>
+ 
+    <!-- FEATURED ITEM (sample data — replaced by DB row in backend phase) -->
+    <article class="pick">
+      <div class="cover"><span class="ph">The Salt<br>in the Letter</span></div>
+      <div class="meta">
+        <div class="type-tag">Literary Fiction &middot; Novel</div>
+        <h3>The Salt in the Letter</h3>
+        <div class="byline">by <a href="memberProfile.html">Ayanna Okeb-Hart</a></div>
+        <div class="placard">
+          <div class="who">Why we picked it</div>
+          <p>&ldquo;A debut that writes grief without a single clich&eacute;. I read the first chapter standing up and didn't sit down until the end.&rdquo;</p>
+        </div>
+        <div class="foot">
+          <span class="price">$6.00</span>
+          <a href="bookDetail.html">Read the first pages &rarr;</a>
+        </div>
+      </div>
+    </article>
+ 
+    <!-- FEATURED ITEM (sample data — replaced by DB row in backend phase) -->
+    <article class="pick">
+      <div class="cover"><span class="ph">Small<br>Systems</span></div>
+      <div class="meta">
+        <div class="type-tag">Technology &middot; Essays</div>
+        <h3>Small Systems, Big Patience</h3>
+        <div class="byline">by <a href="memberProfile.html">Devraj Menon</a></div>
+        <div class="placard">
+          <div class="who">Why we picked it</div>
+          <p>&ldquo;The rare engineering writing that respects your time. Practical, honest about trade-offs, and quietly funny. From a developer nobody's heard of &mdash; yet.&rdquo;</p>
+        </div>
+        <div class="foot">
+          <span class="price">$4.50</span>
+          <a href="bookDetail.html">Read the first pages &rarr;</a>
+        </div>
+      </div>
+    </article>
+ 
+    <!-- FEATURED ITEM (sample data — replaced by DB row in backend phase) -->
+    <article class="pick">
+      <div class="cover"><span class="ph">Field Notes<br>from the<br>Night Shift</span></div>
+      <div class="meta">
+        <div class="type-tag">Memoir &middot; Short Reads</div>
+        <h3>Field Notes from the Night Shift</h3>
+        <div class="byline">by <a href="memberProfile.html">Carmen Ruiz-Adler</a></div>
+        <div class="placard">
+          <div class="who">Why we picked it</div>
+          <p>&ldquo;A nurse's account of the hours most of us sleep through. Spare, unsentimental, and impossible to put down. This is exactly the kind of voice that usually goes unheard.&rdquo;</p>
+        </div>
+        <div class="foot">
+          <span class="price free">Free</span>
+          <a href="bookDetail.html">Read it now &rarr;</a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+ 
+<!-- ===================== MISSION BAND ===================== -->
+<section class="section" style="padding-top:0;">
+  <div class="wrap">
+    <div style="max-width:64ch; border-top:1px solid var(--line); padding-top:var(--space-12);">
+      <h2 style="font-size:var(--size-2xl); margin-bottom:var(--space-6);">Why Phoenix exists</h2>
+      <p style="font-size:var(--size-lg); line-height:1.55; color:var(--ink); opacity:0.85; margin:0 0 var(--space-6);">
+        Maybe you wrote something honest and good &mdash; a short book, a hard-won guide, a piece of research. Maybe it's bolder than what's on the shelves, written in a voice the old gatekeepers haven't caught up to yet. You might be a student, a professional, or just someone who's always dreamed of writing. It doesn't matter where you're starting from.
+      </p>
+      <p style="font-size:var(--size-lg); line-height:1.55; color:var(--ink); opacity:0.85; margin:0;">
+        What matters is that the work is real &mdash; and that it deserves to be read. Publish it here, get found, get paid fairly &mdash; enough to fund the next thing you make. The writers who shape what comes next rarely start out famous. They start out like you. Bring it into the light &mdash; this is where it <em style="font-style:italic; color:var(--ember);">begins</em>.
+      </p>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===================== BROWSE STRIP (discovery, after curation) ===================== -->
+<!--
+  Category chips below are a STATIC sample. In production these can be
+  generated from the categories table, but the list is stable enough
+  that hardcoding the display order is acceptable. Each href ->
+  search.html?category={id}
+-->
+<section class="browse-strip">
+  <div class="wrap inner">
+    <div class="sec-head" style="margin-bottom:0;">
+      <div>
+        <h2>Looking for something specific?</h2>
+        <div class="sub">Forty-plus categories across books, journals, research, and short reads.</div>
+      </div>
+      <a class="more" href="search.html">Full catalogue &rarr;</a>
+    </div>
+    <div class="chips">
+      <a class="chip" href="search.html">Fiction</a>
+      <a class="chip" href="search.html">Science Fiction</a>
+      <a class="chip" href="search.html">Poetry</a>
+      <a class="chip" href="search.html">Technology &amp; Programming</a>
+      <a class="chip" href="search.html">Business</a>
+      <a class="chip" href="search.html">Personal Finance</a>
+      <a class="chip" href="search.html">Biographies &amp; Memoirs</a>
+      <a class="chip" href="search.html">Research &amp; Academic</a>
+      <a class="chip" href="search.html">Self-Help</a>
+      <a class="chip" href="search.html">History</a>
+      <a class="chip" href="search.html">Children's Books</a>
+      <a class="chip" href="search.html">Essays</a>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===================== CHANNELS: OWNED DISTRIBUTION ===================== -->
+<section class="section">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>We don't just host your work. We carry it.</h2>
+        <div class="sub">When something stands out, we put it in front of more readers &mdash; with your permission, never without it.</div>
+      </div>
+    </div>
+    <div class="channels">
+      <div class="channel">
+        <h3>On our channel</h3>
+        <p>We feature selected picks on the Phoenix YouTube channel &mdash; your cover, your story, in front of readers who'd never have found you otherwise. You choose, book by book, whether yours can be included.</p>
+        <a class="btn" href="signup.html">Start publishing</a>
+      </div>
+      <div class="channel">
+        <h3>In the reader's inbox</h3>
+        <p>Our newsletter sends work we believe in straight to subscribers who asked to hear from us. No noise, no automatic dumps &mdash; just the pieces we choose to share. Opt in per book.</p>
+        <a class="btn" href="signup.html">Join the list</a>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===================== FOOTER ===================== -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+        <div style="font-size:var(--size-sm); color:var(--stone); max-width:30ch;">A curated home for writers who deserve to be read.</div>
+      </div>
+      <div class="cols">
+        <div class="col">
+          <h4>Phoenix</h4>
+          <a href="legal/terms.html">Terms</a>
+          <a href="legal/privacy.html">Privacy</a>
+          <a href="legal/report.html">Report something</a>
+        </div>
+      </div>
+    </div>
+    <div class="legal">
+      <span>&copy; 2026 Phoenix Publications</span>
+      <span>Found something that shouldn't be here? <a href="legal/report.html">Report it.</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================================
+     LOGGED-IN HOMEPAGE TRANSFORM
+     Add this <script> right before </body> in index.html.
+     - Logged out: page stays EXACTLY as it is (public persuasion homepage).
+     - Logged in: nav swaps to member links (same style as your other pages),
+       and the body becomes the leaderboard view (greeting + curated + leaderboard
+       + most loved + most discussed).
+     ============================================================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  let me = null;
+  try {
+    const r = await fetch('/api/me');
+    if (r.ok) me = await r.json();
+  } catch (e) {}
+
+  const esc = s => (s || '').replace(/</g, '&lt;');
+
+  // ========================================================================
+  // LOGGED OUT -> load real curated works into "This week's picks", done.
+  // ========================================================================
+  if (!me) {
+    const section = document.querySelector('.section .wrap');
+    if (!section) return;
+    const price = c => c === 0 ? '<span class="price free">Free</span>' : '<span class="price">$' + (c/100).toFixed(2) + '</span>';
+    const coverHtml = b => (b.cover_key && b.cover_key !== 'none' && b.cover_key !== 'pending')
+      ? '<img src="/' + b.cover_key + '" alt="' + esc(b.title) + '" style="width:100%;height:100%;object-fit:cover;display:block">'
+      : '<span class="ph">' + esc(b.title) + '</span>';
+    try {
+      const res = await fetch('/api/featured');
+      if (!res.ok) return;
+      const books = await res.json();
+      section.querySelectorAll('.pick').forEach(el => el.remove());   // remove hardcoded samples
+      if (books.length === 0) {
+        const sec = section.closest('.section');
+        if (sec) sec.style.display = 'none';
+        return;
+      }
+      for (const b of books) {
+        const article = document.createElement('article');
+        article.className = 'pick';
+        const readLabel = b.price_cents === 0 ? 'Read it now &rarr;' : 'Read the first pages &rarr;';
+        article.innerHTML =
+          '<div class="cover">' + coverHtml(b) + '</div>' +
+          '<div class="meta">' +
+            '<h3>' + esc(b.title) + '</h3>' +
+            '<div class="byline">by <a href="memberProfile.html?handle=' + b.handle + '">' + esc(b.publisher) + '</a></div>' +
+            (b.curator_note ? '<div class="placard"><div class="who">Why we picked it</div><p>&ldquo;' + esc(b.curator_note) + '&rdquo;</p></div>' : '') +
+            '<div class="foot">' + price(b.price_cents) + '<a href="bookDetail.html?id=' + b.id + '">' + readLabel + '</a></div>' +
+          '</div>';
+        section.appendChild(article);
+      }
+    } catch (err) { console.error('Could not load featured:', err); }
+    return;   // logged-out path ends here; nothing else touched
+  }
+
+  // ========================================================================
+  // LOGGED IN -> swap nav + replace body with the member view (unchanged).
+  // ========================================================================
+  function price(c){ return c===0 ? 'Free' : '$'+(c/100).toFixed(2); }
+  function firstName(n){ return (n||'').split(' ')[0]; }
+  function initials(n){ return (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+
+  const nav = document.querySelector('nav.main');
+  if (nav) {
+    const avatarInner = (me.avatar_key && me.avatar_key !== 'none')
+      ? '<img src="/' + me.avatar_key + '" alt="You" style="width:100%;height:100%;object-fit:cover;display:block">'
+      : initials(me.display_name);
+    nav.innerHTML =
+    '<a class="hide-sm" href="index.html">Home</a>' +
+      '<a class="hide-sm" href="members/dashboard.html">Dashboard</a>' +
+      '<a class="hide-sm" href="members/library.html">Library</a>' +
+      '<a class="hide-sm" href="search.html">Browse</a>' +
+      ' <a class="hide-sm" href="reviews.html">Reviews</a>'+
+      '<a class="btn solid" href="members/publish.html">Publish</a>' +
+      '<a href="members/editProfile.html" title="Settings" style="display:inline-flex;align-items:center">' +
+        '<span style="width:32px;height:32px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(150deg,var(--pine),var(--ink));color:var(--paper);font-family:var(--font-display);font-size:var(--size-xs);flex-shrink:0">' + avatarInner + '</span>' +
+      '</a>';
+  }
+
+  let feed;
+  try {
+    const r = await fetch('/api/home-feed');
+    if (!r.ok) return;
+    feed = await r.json();
+  } catch (e) { return; }
+
+  function card(b, rank, meta) {
+    const cover = (b.cover_key && b.cover_key !== 'none' && b.cover_key !== 'pending')
+      ? '<img src="/' + b.cover_key + '" alt="' + esc(b.title) + '">'
+      : '<span class="ph">' + esc(b.title) + '</span>';
+    const badge = rank
+      ? '<span class="rank' + (rank <= 3 ? ' top' : '') + '">' + (rank === 1 ? '\u2605 1' : '#' + rank) + '</span>'
+      : '';
+    return '<a class="hb-card" href="bookDetail.html?id=' + b.id + '">' +
+      '<div class="hb-cover">' + badge + cover + '</div>' +
+      '<div class="hb-title">' + esc(b.title) + '</div>' +
+      '<div class="hb-author">' + esc(b.author || '') + '</div>' +
+      '<div class="hb-meta">' + (meta || price(b.price_cents)) + '</div>' +
+      '</a>';
+  }
+  function rowHtml(books, withRank, metaFn) {
+    if (!books || books.length === 0)
+      return '<div class="hb-empty">Nothing here yet \u2014 be the first to make the list.</div>';
+    return '<div class="hb-row">' + books.map((b, i) => card(b, withRank ? i + 1 : null, metaFn ? metaFn(b) : null)).join('') + '</div>';
+  }
+
+  const html =
+    '<style>' +
+    '  .hb-wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }' +
+    '  .hb-greet { padding: var(--space-16) 0 var(--space-8); }' +
+    '  .hb-greet h1 { font-family: var(--font-display); font-size: var(--size-3xl); letter-spacing: -0.02em; margin: 0 0 var(--space-2); }' +
+    '  .hb-greet .sub { color: var(--stone); font-size: var(--size-base); }' +
+    '  .hb-section { padding: var(--space-8) 0; border-top: 1px solid var(--line); }' +
+    '  .hb-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-6); gap: var(--space-4); }' +
+    '  .hb-head h2 { font-family: var(--font-display); font-size: var(--size-2xl); margin: 0; letter-spacing: -0.01em; }' +
+    '  .hb-head .tag { font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ember); font-weight: 600; white-space: nowrap; }' +
+    '  .hb-head .desc { font-size: var(--size-sm); color: var(--stone); text-align: right; }' +
+    '  .hb-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 180px); gap: var(--space-5); overflow-x: auto; padding-bottom: var(--space-4); scroll-snap-type: x mandatory; }' +
+    '  .hb-row::-webkit-scrollbar { height: 6px; } .hb-row::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }' +
+    '  .hb-card { scroll-snap-align: start; text-decoration: none; color: var(--ink); display: block; }' +
+    '  .hb-cover { position: relative; width: 100%; aspect-ratio: 3/4; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-3); transition: transform .15s; }' +
+    '  .hb-card:hover .hb-cover { transform: translateY(-4px); }' +
+    '  .hb-cover img { width: 100%; height: 100%; object-fit: cover; }' +
+    '  .hb-cover .ph { font-family: var(--font-display); color: rgba(251,249,244,0.85); font-size: var(--size-sm); text-align: center; padding: var(--space-3); }' +
+    '  .hb-cover .rank { position: absolute; top: var(--space-2); left: var(--space-2); background: rgba(22,19,15,0.85); color: var(--paper); font-size: var(--size-xs); font-weight: 700; padding: 2px var(--space-2); border-radius: var(--radius); }' +
+    '  .hb-cover .rank.top { background: var(--ember); }' +
+    '  .hb-title { font-family: var(--font-display); font-weight: 600; font-size: var(--size-base); line-height: 1.15; }' +
+    '  .hb-author { font-size: var(--size-xs); color: var(--stone); margin-top: 2px; }' +
+    '  .hb-meta { font-size: var(--size-xs); color: var(--ember); font-weight: 600; margin-top: var(--space-2); }' +
+    '  .hb-empty { color: var(--stone); font-size: var(--size-sm); padding: var(--space-8) 0; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); }' +
+    '</style>' +
+    '<div class="hb-wrap">' +
+      '<div class="hb-greet"><h1>Welcome back, ' + esc(firstName(feed.display_name)) + '.</h1>' +
+        '<div class="sub">Here\u2019s what\u2019s moving on Phoenix right now.</div></div>' +
+      '<div class="hb-section"><div class="hb-head"><h2>Chosen by Phoenix</h2><span class="tag">Curated by hand</span></div>' + rowHtml(feed.curated, false) + '</div>' +
+      '<div class="hb-section"><div class="hb-head"><h2>The Leaderboard</h2><span class="desc">Top selling works \u2014 climb your way here.</span></div>' + rowHtml(feed.topEarning, true) + '</div>' +
+      '<div class="hb-section"><div class="hb-head"><h2>Most Loved</h2><span class="desc">The works readers can\u2019t stop liking.</span></div>' + rowHtml(feed.mostLoved, false, b => '\u2665 ' + (b.like_count || 0)) + '</div>' +
+      '<div class="hb-section"><div class="hb-head"><h2>Most Discussed</h2><span class="desc">Where the conversation is happening.</span></div>' + rowHtml(feed.mostDiscussed, false, b => '\uD83D\uDCAC ' + (b.comment_count || 0)) + '</div>' +
+    '</div>';
+
+  const header = document.querySelector('header.top');
+  const footer = document.querySelector('footer');
+  if (header && footer) {
+    let node = header.nextElementSibling;
+    while (node && node !== footer) { const next = node.nextElementSibling; node.remove(); node = next; }
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    header.after(container);
+  }
+});
+</script>
+</body>
+</html>

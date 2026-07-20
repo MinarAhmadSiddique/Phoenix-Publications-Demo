@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report something &middot; Phoenix Publications</title>
+<!-- lives in /legal/ — paths use ../ -->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* ============================================================
+     REPORT (legal/report.html) — public-facing report form.
+     Entry point to the moderation workflow. Calm, reassuring,
+     serious. Captures what the reports table needs:
+       target_type (member/book/comment), target_id, reason,
+       reporter_name, reporter_email (+ reporter_id when logged in).
+     The ADMIN side that processes these is separate (/admin/).
+     Design only, no JS.
+     ============================================================ */
+ 
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+  .narrow { max-width: 640px; margin: 0 auto; }
+ 
+  header.top { border-bottom: 1px solid var(--line); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  .top-inner .back { font-size: var(--size-sm); color: var(--stone); }
+ 
+  /* ---- head ---- */
+  .rhead { padding: var(--space-16) 0 var(--space-8); }
+  .rhead h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-4); }
+  .rhead p { font-size: var(--size-lg); line-height: 1.55; color: var(--ink); opacity: 0.85; max-width: 56ch; }
+ 
+  /* urgent-help callout */
+  .urgent { background: var(--paper-2); border-left: 2px solid var(--ember); border-radius: var(--radius); padding: var(--space-5) var(--space-6); margin-top: var(--space-8); font-size: var(--size-sm); line-height: 1.6; color: var(--ink); }
+  .urgent strong { font-weight: 600; }
+ 
+  /* ---- form ---- */
+  .formwrap { padding: var(--space-12) 0 var(--space-16); }
+  .field { margin-bottom: var(--space-8); }
+  .field > label { display: block; font-size: var(--size-base); font-weight: 600; margin-bottom: var(--space-2); color: var(--ink); }
+  .field .sub { font-size: var(--size-sm); color: var(--stone); margin-bottom: var(--space-4); line-height: 1.5; }
+  .field input[type=text], .field input[type=email], .field textarea, .field select { width: 100%; font-family: var(--font-body); font-size: var(--size-base); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); transition: border-color .15s; }
+  .field textarea { resize: vertical; min-height: 120px; line-height: 1.55; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--ember); }
+  .field .count { font-size: var(--size-xs); color: var(--stone); margin-top: var(--space-2); }
+ 
+  /* what-am-I-reporting choice (radio cards) */
+  .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+  .choice { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-5); cursor: pointer; text-align: center; transition: border-color .15s, background .15s; }
+  .choice:hover { border-color: var(--ember); }
+  .choice input { position: absolute; opacity: 0; }
+  .choice .ci { font-family: var(--font-display); font-size: var(--size-base); font-weight: 600; margin-bottom: var(--space-1); }
+  .choice .cd { font-size: var(--size-xs); color: var(--stone); }
+  .choice input:checked ~ .ci { color: var(--ember); }
+ 
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+ 
+  .submitbar { display: flex; align-items: center; gap: var(--space-5); margin-top: var(--space-4); flex-wrap: wrap; }
+  .btn-submit { font-family: var(--font-body); font-size: var(--size-base); font-weight: 500; padding: var(--space-3) var(--space-12); border: 1px solid var(--ink); border-radius: var(--radius); background: var(--ink); color: var(--paper); cursor: pointer; transition: background .15s, border-color .15s; }
+  .btn-submit:hover { background: var(--ember); border-color: var(--ember); }
+  .submitbar .snote { font-size: var(--size-xs); color: var(--stone); max-width: 36ch; }
+ 
+  /* what happens next */
+  .next { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .next h2 { font-size: var(--size-xl); margin-bottom: var(--space-6); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-8); }
+  .step .sn { font-family: var(--font-display); font-size: var(--size-2xl); color: var(--ember); font-weight: 600; margin-bottom: var(--space-2); }
+  .step .st { font-weight: 600; font-size: var(--size-base); margin-bottom: var(--space-2); }
+  .step .sd { font-size: var(--size-sm); color: var(--stone); line-height: 1.55; }
+ 
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row .brand { font-size: var(--size-base); }
+  .foot-row a { color: var(--stone); }
+ 
+  @media (max-width: 640px) {
+    .rhead h1 { font-size: var(--size-2xl); }
+    .choices { grid-template-columns: 1fr; }
+    .two { grid-template-columns: 1fr; gap: var(--space-6); }
+    .steps { grid-template-columns: 1fr; gap: var(--space-6); }
+  }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <a class="back" href="../index.html">&larr; Back home</a>
+  </div>
+</header>
+ 
+<!-- HEAD -->
+<section class="rhead">
+  <div class="wrap narrow">
+    <h1>Report something</h1>
+    <p>If something on Phoenix shouldn't be here &mdash; stolen work, abuse, anything harmful or wrong &mdash; tell us. A real person reads every report, and we take them seriously.</p>
+    <div class="urgent"><strong>If someone is in immediate danger,</strong> please contact your local emergency services first. This form is for content and conduct on Phoenix.</div>
+  </div>
+</section>
+ 
+<!-- FORM -->
+<div class="wrap narrow formwrap">
+ 
+  <!-- what are you reporting -->
+  <div class="field">
+    <label>What are you reporting?</label>
+    <div class="choices">
+      <label class="choice">
+        <input type="radio" name="ttype" checked>
+        <div class="ci">A work</div>
+        <div class="cd">A book, journal, or piece</div>
+      </label>
+      <label class="choice">
+        <input type="radio" name="ttype">
+        <div class="ci">A member</div>
+        <div class="cd">Someone's account</div>
+      </label>
+      <label class="choice">
+        <input type="radio" name="ttype">
+        <div class="ci">A comment</div>
+        <div class="cd">Something posted</div>
+      </label>
+    </div>
+  </div>
+ 
+  <!-- what specifically (link or name) -->
+  <div class="field">
+    <label for="target">Which one?</label>
+    <div class="sub">Paste the link, or the title or handle, so we can find it quickly.</div>
+    <input type="text" id="target" placeholder="e.g. phoenixpublications.com/… or @handle or a title">
+  </div>
+ 
+  <!-- reason -->
+  <div class="field">
+    <label for="reason">What's wrong?</label>
+    <div class="sub">Choose the closest reason &mdash; you can explain more below.</div>
+    <select id="reason">
+      <option>Stolen, pirated, or plagiarised work</option>
+      <option>Harassment, threats, or abuse</option>
+      <option>Hateful or violent content</option>
+      <option>Sexual content involving minors, or any harm to children</option>
+      <option>Spam, scams, or misleading content</option>
+      <option>Illegal content</option>
+      <option>Something else</option>
+    </select>
+  </div>
+ 
+  <!-- details -->
+  <div class="field">
+    <label for="details">Tell us more</label>
+    <div class="sub">Anything that helps us understand. The more specific, the faster we can act.</div>
+    <textarea id="details" placeholder="What did you see, and why does it concern you?"></textarea>
+  </div>
+ 
+  <!-- reporter identity (captured on the report) -->
+  <div class="field">
+    <label>Your details</label>
+    <div class="sub">So we can follow up if we need to. We won't share these with the person you're reporting.</div>
+    <div class="two">
+      <input type="text" placeholder="Your name" aria-label="Your name">
+      <input type="email" placeholder="Your email" aria-label="Your email">
+    </div>
+  </div>
+ 
+  <!-- submit -->
+  <div class="submitbar">
+    <button class="btn-submit" type="button">Submit report</button>
+    <span class="snote">You'll get a confirmation by email. We don't share who reported what.</span>
+  </div>
+ 
+</div>
+ 
+<!-- WHAT HAPPENS NEXT -->
+<section class="next">
+  <div class="wrap narrow">
+    <h2>What happens next</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="sn">1</div>
+        <div class="st">We read it</div>
+        <div class="sd">A person on our team reviews every report. No bots deciding on their own.</div>
+      </div>
+      <div class="step">
+        <div class="sn">2</div>
+        <div class="st">We look into it</div>
+        <div class="sd">We check the work, profile, or comment against our terms &mdash; carefully, not hastily.</div>
+      </div>
+      <div class="step">
+        <div class="sn">3</div>
+        <div class="st">We act</div>
+        <div class="sd">If something breaks the rules, we remove it or close the account. Either way, we close the loop.</div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div>
+        <a href="../search.html">Browse</a> &nbsp;&middot;&nbsp;
+        <a href="terms.html">Terms</a> &nbsp;&middot;&nbsp;
+        <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
+        <a href="report.html">Report something</a>
+      </div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const submitBtn = document.querySelector('.btn-submit');
+  if (!submitBtn) return;
+
+  // Map the radio choices to target types.
+  function getTargetType() {
+    const radios = document.querySelectorAll('input[name="ttype"]');
+    // Order in the HTML: A work, A member, A comment
+    const types = ['book', 'member', 'comment'];
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) return types[i];
+    }
+    return 'book';
+  }
+
+  submitBtn.addEventListener('click', async () => {
+    const targetType = getTargetType();
+    const targetText = document.getElementById('target').value.trim();
+    const reasonChoice = document.getElementById('reason').value;
+    const details = document.getElementById('details').value.trim();
+    const nameInput = document.querySelector('input[placeholder="Your name"]');
+    const emailInput = document.querySelector('input[placeholder="Your email"]');
+    const name = nameInput ? nameInput.value.trim() : '';
+    const email = emailInput ? emailInput.value.trim() : '';
+
+    if (!name || !email) { alert('Please give your name and email so we can follow up.'); return; }
+
+    submitBtn.textContent = 'Submitting…';
+    submitBtn.disabled = true;
+
+    try {
+      const r = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetType, targetText, reasonChoice, details, name, email })
+      });
+      const data = await r.json();
+      if (r.ok) {
+        // Replace the form with a thank-you.
+        const formwrap = document.querySelector('.formwrap');
+        if (formwrap) {
+          formwrap.innerHTML =
+            '<div style="text-align:center; padding:var(--space-16) 0">' +
+            '<h2 style="font-family:var(--font-display); font-size:var(--size-2xl); margin-bottom:var(--space-4)">Thank you &mdash; we\'ve got it.</h2>' +
+            '<p style="color:var(--stone); max-width:48ch; margin:0 auto var(--space-8)">A real person will review your report carefully. We take every one seriously, and we\'ll close the loop.</p>' +
+            '<a class="btn" href="../index.html">Back home</a>' +
+            '</div>';
+        }
+      } else {
+        alert(data.error || 'Could not submit your report.');
+        submitBtn.textContent = 'Submit report';
+        submitBtn.disabled = false;
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong. Please try again.');
+      submitBtn.textContent = 'Submit report';
+      submitBtn.disabled = false;
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Phoenix &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  /* ============================================================
+     SIGN UP — pair to login.html. Two panels:
+     the "you're about to begin / something bigger" message,
+     and the account form (name, handle, email, password, consent).
+     Design only — no form action, no JS. Wired in backend phase.
+     ============================================================ */
+ 
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+ 
+  header.top { border-bottom: 1px solid var(--line); }
+  .top-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  .top-inner .back { font-size: var(--size-sm); color: var(--stone); }
+ 
+  .split { flex: 1; display: grid; grid-template-columns: 1fr 1fr; }
+ 
+  /* LEFT — the message panel (the bigger purpose) */
+  .welcome {
+    background: var(--ink); color: var(--paper);
+    padding: var(--space-24) var(--space-16);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .welcome .eyebrow { font-size: var(--size-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ember); font-weight: 600; margin-bottom: var(--space-8); }
+  .welcome h1 {
+    font-family: var(--font-display); font-weight: 500; font-size: var(--size-3xl);
+    line-height: 1.12; letter-spacing: -0.02em; color: var(--paper);
+    max-width: 17ch; margin-bottom: var(--space-8);
+  }
+  .welcome h1 em { font-style: italic; color: var(--ember); }
+  .welcome p { font-size: var(--size-lg); line-height: 1.55; color: rgba(251,249,244,0.82); max-width: 46ch; margin: 0 0 var(--space-6); }
+ 
+  /* a small list of what they're joining — quiet, not salesy */
+  .welcome .pillars { margin-top: var(--space-8); display: flex; flex-direction: column; gap: var(--space-4); }
+  .welcome .pillar { display: flex; gap: var(--space-4); align-items: baseline; max-width: 42ch; }
+  .welcome .pillar .dot { color: var(--ember); font-size: var(--size-base); line-height: 1; }
+  .welcome .pillar span { font-size: var(--size-sm); color: rgba(251,249,244,0.78); line-height: 1.5; }
+ 
+  /* RIGHT — form panel */
+  .formpane { padding: var(--space-16) var(--space-16); display: flex; flex-direction: column; justify-content: center; background: var(--paper); }
+  .formpane .inner { width: 100%; max-width: 400px; margin: 0 auto; }
+  .formpane h2 { font-size: var(--size-2xl); margin-bottom: var(--space-2); letter-spacing: -0.01em; }
+  .formpane .lead { font-size: var(--size-sm); color: var(--stone); margin-bottom: var(--space-8); }
+ 
+  .field { margin-bottom: var(--space-5); }
+  .field label { display: block; font-size: var(--size-sm); font-weight: 500; margin-bottom: var(--space-2); color: var(--ink); }
+  .field .hint { font-weight: 400; color: var(--stone); font-size: var(--size-xs); }
+  .field input {
+    width: 100%; font-family: var(--font-body); font-size: var(--size-base);
+    padding: var(--space-3) var(--space-4); border: 1px solid var(--line);
+    border-radius: var(--radius); background: var(--paper); color: var(--ink); transition: border-color .15s;
+  }
+  .field input:focus { outline: none; border-color: var(--ember); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+ 
+  /* consent checkboxes */
+  .consent { margin: var(--space-6) 0 var(--space-2); display: flex; flex-direction: column; gap: var(--space-4); }
+  .check { display: flex; gap: var(--space-3); align-items: flex-start; cursor: pointer; }
+  .check input { margin-top: 3px; accent-color: var(--ember); width: 16px; height: 16px; flex-shrink: 0; }
+  .check span { font-size: var(--size-sm); color: var(--ink); line-height: 1.5; }
+  .check span small { display: block; color: var(--stone); font-size: var(--size-xs); }
+ 
+  .btn-primary {
+    width: 100%; font-family: var(--font-body); font-size: var(--size-base); font-weight: 500;
+    padding: var(--space-3) var(--space-4); border: 1px solid var(--ink);
+    border-radius: var(--radius); background: var(--ink); color: var(--paper);
+    cursor: pointer; transition: background .15s, border-color .15s; margin-top: var(--space-6);
+  }
+  .btn-primary:hover { background: var(--ember); border-color: var(--ember); }
+ 
+  .divider { display: flex; align-items: center; gap: var(--space-4); margin: var(--space-6) 0; color: var(--stone); font-size: var(--size-xs); }
+  .divider::before, .divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+  .alt { text-align: center; font-size: var(--size-sm); color: var(--ink); }
+  .alt a { color: var(--ember); font-weight: 500; }
+  .fineprint { margin-top: var(--space-6); font-size: var(--size-xs); color: var(--stone); text-align: center; line-height: 1.5; }
+  .fineprint a { color: var(--stone); text-decoration: underline; }
+ 
+  @media (max-width: 920px) {
+    .split { grid-template-columns: 1fr; }
+    .welcome { padding: var(--space-16) var(--space-8); }
+    .welcome h1 { font-size: var(--size-2xl); }
+    .welcome p { font-size: var(--size-base); }
+    .formpane { padding: var(--space-16) var(--space-8); }
+  }
+  @media (max-width: 460px) {
+    .two { grid-template-columns: 1fr; gap: 0; }
+    .two .field { margin-bottom: var(--space-5); }
+  }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <a class="back" href="index.html">&larr; Back home</a>
+  </div>
+</header>
+ 
+<main class="split">
+ 
+  <!-- LEFT: the bigger-purpose message -->
+  <section class="welcome">
+    <div class="eyebrow">Your beginning</div>
+    <h1>You're about to join something <em>bigger than yourself.</em></h1>
+    <p>This is more than an account. It's a place at the table for writers the world hasn't met yet &mdash; and a small act of faith in a future where good work finds its readers, no matter who made it.</p>
+    <p>Every person who joins makes that future a little more real. We're glad it's you.</p>
+    <div class="pillars">
+      <div class="pillar"><span class="dot">&#10022;</span><span>Publish your work and keep what you earn &mdash; minus a 4% commission and standard processing, always shown plainly.</span></div>
+      <div class="pillar"><span class="dot">&#10022;</span><span>Be chosen by a person, not an algorithm &mdash; and carried to readers beyond the site.</span></div>
+      <div class="pillar"><span class="dot">&#10022;</span><span>Read work you won't find anywhere else, from voices on their way up.</span></div>
+    </div>
+  </section>
+ 
+  <!-- RIGHT: the account form (design only — no action/JS) -->
+  <section class="formpane">
+    <div class="inner">
+      <h2>Create your account</h2>
+      <div class="lead">One account to read, to publish, and to be read.</div>
+ 
+      <!-- Real form: submits to the /signup route. Native HTML, no JavaScript. -->
+      <form action="/signup" method="POST">
+        <div class="two">
+          <div class="field">
+            <label for="name">Your name</label>
+            <input type="text" id="name" name="display_name" placeholder="Jane Rivera" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="handle">Handle <span class="hint">&mdash; your public name</span></label>
+            <input type="text" id="handle" name="handle" placeholder="janerivera" autocomplete="off" required>
+          </div>
+        </div>
+ 
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+ 
+        <div class="field">
+          <label for="password">Password <span class="hint">&mdash; at least 8 characters</span></label>
+          <input type="password" id="password" name="password" placeholder="Create a password" autocomplete="new-password" required minlength="8">
+        </div>
+ 
+        <!-- consent: maps to newsletter_subscribers + account prefs in schema -->
+        <div class="consent">
+          <label class="check">
+            <input type="checkbox" name="newsletter" value="yes">
+            <span>Send me the Phoenix newsletter
+              <small>Our picks, now and then. You can leave any time, one click.</small>
+            </span>
+          </label>
+          <label class="check">
+            <input type="checkbox" name="terms" value="yes" required>
+            <span>I agree to the <a href="legal/terms.html">Terms</a> and <a href="legal/privacy.html">Privacy Policy</a>.</span>
+          </label>
+        </div>
+ 
+        <button class="btn-primary" type="submit">Create account &amp; begin</button>
+      </form>
+ 
+      <div class="divider">already with us?</div>
+      <div class="alt">Have an account? <a href="login.html">Log in</a></div>
+ 
+      <div class="fineprint">
+        Publishing choices &mdash; like featuring a work on our channel or in the newsletter &mdash; are made per book, later, and always up to you.
+      </div>
+    </div>
+  </section>
+ 
+</main>
+ 
+</body>
+</html>

@@ -1,0 +1,420 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports &middot; Phoenix Admin</title>
+<!-- lives in /admin/ — paths use ../ -->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* ============================================================
+     ADMIN REPORTS QUEUE (admin/adminReports.html)
+     Control-room dark style (inherits from adminLogin). The back
+     office for the public report form. Workflow:
+       submitted -> reviewing -> resolved
+     "Active" and "Resolved" are just status filters on ONE table.
+     Each report: open -> investigate (visit target) -> record
+     action_taken -> resolve. Child-safety reports prioritised.
+     Design only, no JS. Sample data.
+     ============================================================ */
+ 
+  body { margin: 0; min-height: 100vh; background: var(--ink); color: var(--paper); font-family: var(--font-body); }
+ 
+  /* admin top bar with nav across admin pages */
+  .abar { border-bottom: 1px solid rgba(251,249,244,0.12); padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); position: sticky; top: 0; background: var(--ink); z-index: 50; }
+  .abar .b { font-family: var(--font-display); font-weight: 600; font-size: var(--size-base); color: var(--paper); display: flex; align-items: baseline; gap: var(--space-2); }
+  .abar .b .mark { color: var(--ember); }
+  .abar nav { display: flex; gap: var(--space-6); font-size: var(--size-sm); }
+  .abar nav a { color: rgba(251,249,244,0.6); }
+  .abar nav a.here { color: var(--ember); font-weight: 500; }
+  .abar nav a:hover { color: var(--paper); text-decoration: none; }
+  .abar .out { font-size: var(--size-xs); color: rgba(251,249,244,0.4); }
+ 
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+ 
+  .phead { margin-bottom: var(--space-8); }
+  .phead h1 { font-family: var(--font-display); font-size: var(--size-2xl); color: var(--paper); margin-bottom: var(--space-2); }
+  .phead .sub { font-size: var(--size-sm); color: rgba(251,249,244,0.5); }
+ 
+  /* status filter tabs */
+  .filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-6); flex-wrap: wrap; }
+  .ftab { font-size: var(--size-sm); padding: var(--space-2) var(--space-5); border-radius: 100px; border: 1px solid rgba(251,249,244,0.18); background: transparent; color: rgba(251,249,244,0.7); cursor: pointer; transition: all .15s; }
+  .ftab:hover { border-color: var(--ember); color: var(--paper); text-decoration: none; }
+  .ftab.active { background: var(--ember); border-color: var(--ember); color: var(--paper); font-weight: 500; }
+  .ftab .ct { opacity: 0.7; margin-left: var(--space-2); }
+ 
+  /* two-pane: queue list + detail */
+  .panes { display: grid; grid-template-columns: 380px 1fr; gap: var(--space-6); align-items: start; }
+ 
+  /* queue list */
+  .queue { display: flex; flex-direction: column; gap: var(--space-3); }
+  .rcard { border: 1px solid rgba(251,249,244,0.12); border-radius: var(--radius); padding: var(--space-5); background: #1f1b16; cursor: pointer; transition: border-color .15s; }
+  .rcard:hover { border-color: rgba(251,249,244,0.3); }
+  .rcard.sel { border-color: var(--ember); }
+  .rcard.priority { border-left: 3px solid var(--ember); }
+  .rcard .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); gap: var(--space-3); }
+  .rcard .reason { font-weight: 600; font-size: var(--size-sm); color: var(--paper); line-height: 1.3; }
+  .rcard .when { font-size: var(--size-xs); color: rgba(251,249,244,0.4); white-space: nowrap; }
+  .rcard .meta { font-size: var(--size-xs); color: rgba(251,249,244,0.5); display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+  .tag { font-size: 0.66rem; padding: 1px var(--space-2); border-radius: var(--radius); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .tag.work { background: rgba(61,90,82,0.4); color: #9ec5b8; }
+  .tag.member { background: rgba(138,131,119,0.3); color: #cfc8ba; }
+  .tag.comment { background: rgba(181,70,46,0.25); color: #e3a08e; }
+  .tag.urgent { background: var(--ember); color: var(--paper); }
+  .status { font-size: 0.66rem; padding: 1px var(--space-2); border-radius: var(--radius); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .status.submitted { background: rgba(251,249,244,0.12); color: rgba(251,249,244,0.7); }
+  .status.reviewing { background: rgba(181,70,46,0.25); color: #e3a08e; }
+  .status.resolved { background: rgba(61,90,82,0.4); color: #9ec5b8; }
+ 
+  /* detail pane */
+  .detail { border: 1px solid rgba(251,249,244,0.12); border-radius: var(--radius); padding: var(--space-8); background: #1f1b16; position: sticky; top: 92px; }
+  .detail .dtop { display: flex; justify-content: space-between; align-items: start; gap: var(--space-4); margin-bottom: var(--space-6); padding-bottom: var(--space-6); border-bottom: 1px solid rgba(251,249,244,0.1); }
+  .detail .dtitle { font-family: var(--font-display); font-size: var(--size-lg); color: var(--paper); margin-bottom: var(--space-2); }
+  .detail .dtags { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+ 
+  .drow { margin-bottom: var(--space-5); }
+  .drow .dk { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: rgba(251,249,244,0.4); font-weight: 600; margin-bottom: var(--space-2); }
+  .drow .dv { font-size: var(--size-sm); color: rgba(251,249,244,0.85); line-height: 1.6; }
+  .drow .dv a { color: var(--ember); }
+  .drow .target-link { display: inline-flex; align-items: center; gap: var(--space-2); border: 1px solid rgba(251,249,244,0.2); border-radius: var(--radius); padding: var(--space-2) var(--space-4); font-size: var(--size-sm); color: var(--paper); margin-top: var(--space-1); }
+  .drow .target-link:hover { border-color: var(--ember); text-decoration: none; color: var(--ember); }
+ 
+  .reporter { background: #16130f; border-radius: var(--radius); padding: var(--space-4); font-size: var(--size-sm); color: rgba(251,249,244,0.7); }
+  .reporter .rn { color: var(--paper); font-weight: 500; }
+ 
+  /* action zone */
+  .action { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid rgba(251,249,244,0.1); }
+  .action .ak { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: rgba(251,249,244,0.4); font-weight: 600; margin-bottom: var(--space-3); }
+  .action textarea { width: 100%; font-family: var(--font-body); font-size: var(--size-sm); padding: var(--space-3) var(--space-4); border: 1px solid rgba(251,249,244,0.18); border-radius: var(--radius); background: #16130f; color: var(--paper); resize: vertical; min-height: 72px; }
+  .action textarea:focus { outline: none; border-color: var(--ember); }
+  .action select { width: 100%; font-family: var(--font-body); font-size: var(--size-sm); padding: var(--space-3) var(--space-4); border: 1px solid rgba(251,249,244,0.18); border-radius: var(--radius); background: #16130f; color: var(--paper); margin-bottom: var(--space-4); }
+  .action select:focus { outline: none; border-color: var(--ember); }
+  .abtns { display: flex; gap: var(--space-3); margin-top: var(--space-5); flex-wrap: wrap; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-3) var(--space-6); border-radius: var(--radius); cursor: pointer; border: 1px solid rgba(251,249,244,0.2); background: transparent; color: var(--paper); transition: all .15s; }
+  .btn:hover { border-color: rgba(251,249,244,0.5); }
+  .btn.solid { background: var(--ember); border-color: var(--ember); }
+  .btn.solid:hover { opacity: 0.9; }
+ 
+  @media (max-width: 900px) {
+    .panes { grid-template-columns: 1fr; }
+    .detail { position: static; }
+    .abar nav { display: none; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ADMIN BAR -->
+<div class="abar">
+  <div class="b"><span class="mark">&#10022;</span> Phoenix Admin</div>
+  <nav>
+    <a href="curation.html">Curation</a>
+    <a class="here" href="adminReports.html">Reports</a>
+    <a href="contentManage.html">Content</a>
+    <a href="sendNewsletter.html">Newsletter</a>
+  </nav>
+<span class="out">Signed in &middot; <a href="/admin/logout" style="color:rgba(251,249,244,0.7)">Log out</a></span>
+</div>
+ 
+<div class="wrap">
+ 
+  <div class="phead">
+    <h1>Reports</h1>
+    <div class="sub">Every report from the site lands here. Investigate, act, resolve. Child-safety reports are flagged and come first.</div>
+  </div>
+ 
+  <!-- status filters (one table, filtered by status) -->
+  <div class="filters">
+    <a class="ftab active" href="adminReports.html">Needs attention <span class="ct">7</span></a>
+    <a class="ftab" href="adminReports.html">Reviewing <span class="ct">2</span></a>
+    <a class="ftab" href="adminReports.html">Resolved <span class="ct">143</span></a>
+    <a class="ftab" href="adminReports.html">All</a>
+  </div>
+ 
+  <div class="panes">
+ 
+    <!-- QUEUE LIST -->
+    <div class="queue">
+ 
+      <!-- PRIORITY report (child safety) -->
+      <div class="rcard sel priority">
+        <div class="top">
+          <div class="reason">Sexual content involving minors</div>
+          <div class="when">12m ago</div>
+        </div>
+        <div class="meta">
+          <span class="tag urgent">Priority</span>
+          <span class="tag work">Work</span>
+          <span class="status submitted">Submitted</span>
+        </div>
+      </div>
+ 
+      <!-- report -->
+      <div class="rcard">
+        <div class="top">
+          <div class="reason">Stolen / plagiarised work</div>
+          <div class="when">1h ago</div>
+        </div>
+        <div class="meta">
+          <span class="tag work">Work</span>
+          <span class="status submitted">Submitted</span>
+        </div>
+      </div>
+ 
+      <!-- report -->
+      <div class="rcard">
+        <div class="top">
+          <div class="reason">Harassment in a comment</div>
+          <div class="when">3h ago</div>
+        </div>
+        <div class="meta">
+          <span class="tag comment">Comment</span>
+          <span class="status submitted">Submitted</span>
+        </div>
+      </div>
+ 
+      <!-- report -->
+      <div class="rcard">
+        <div class="top">
+          <div class="reason">Spam / misleading listing</div>
+          <div class="when">5h ago</div>
+        </div>
+        <div class="meta">
+          <span class="tag member">Member</span>
+          <span class="status submitted">Submitted</span>
+        </div>
+      </div>
+ 
+      <!-- report -->
+      <div class="rcard">
+        <div class="top">
+          <div class="reason">Pirated work for sale</div>
+          <div class="when">Yesterday</div>
+        </div>
+        <div class="meta">
+          <span class="tag work">Work</span>
+          <span class="status submitted">Submitted</span>
+        </div>
+      </div>
+ 
+    </div>
+ 
+    <!-- DETAIL / ACTION PANE -->
+    <div class="detail">
+      <div class="dtop">
+        <div>
+          <div class="dtitle">Sexual content involving minors</div>
+          <div class="dtags">
+            <span class="tag urgent">Priority</span>
+            <span class="tag work">Work</span>
+            <span class="status submitted">Submitted</span>
+          </div>
+        </div>
+        <div class="when" style="font-size:var(--size-xs); color:rgba(251,249,244,0.4)">Report #4187</div>
+      </div>
+ 
+      <div class="drow">
+        <div class="dk">Reported work</div>
+        <a class="target-link" href="../bookDetail.html">&#10022; Open the reported work &rarr;</a>
+      </div>
+ 
+      <div class="drow">
+        <div class="dk">What the reporter said</div>
+        <div class="dv">"The cover and description appear to depict a minor in a sexualised way. This should not be on the platform."</div>
+      </div>
+ 
+      <div class="drow">
+        <div class="dk">Investigate</div>
+        <div class="dv">
+          <a class="target-link" href="../memberProfile.html">View publisher's profile &rarr;</a>
+        </div>
+      </div>
+ 
+      <div class="drow">
+        <div class="dk">Reporter</div>
+        <div class="reporter">
+          <span class="rn">Rina Kapoor</span> &middot; rina&#64;example.com<br>
+          <span style="font-size:var(--size-xs); color:rgba(251,249,244,0.4)">Submitted 26 June 2026, 05:14</span>
+        </div>
+      </div>
+ 
+      <!-- ACTION ZONE -->
+      <div class="action">
+        <div class="ak">Take action</div>
+        <select>
+          <option>Choose an action&hellip;</option>
+          <option>Remove the work</option>
+          <option>Remove work &amp; suspend account</option>
+          <option>Remove work, suspend &amp; escalate (legal / authorities)</option>
+          <option>No action needed &mdash; dismiss</option>
+        </select>
+        <textarea placeholder="Record what you did and why (saved with the report)…"></textarea>
+        <div class="abtns">
+          <button class="btn" type="button">Mark as reviewing</button>
+          <button class="btn solid" type="button">Resolve report</button>
+        </div>
+      </div>
+ 
+    </div>
+ 
+  </div>
+</div>
+ 
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const queue = document.querySelector('.queue');
+  const detail = document.querySelector('.detail');
+  const tabs = document.querySelectorAll('.filters .ftab');
+  let currentStatus = 'submitted';
+  let reports = [];
+  let selectedId = null;
+
+  function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+  function timeAgo(dateStr) {
+    const d = new Date(dateStr.replace(' ', 'T') + 'Z');
+    const mins = Math.floor((Date.now() - d) / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+  }
+  const typeLabel = { book: 'Work', member: 'Member', comment: 'Comment' };
+
+  async function load() {
+    try {
+      const res = await fetch('/api/admin/reports?status=' + currentStatus);
+      if (!res.ok) { queue.innerHTML = '<p style="color:rgba(251,249,244,0.5); padding:24px">Could not load (admin only).</p>'; return; }
+      const data = await res.json();
+      reports = data.reports;
+
+      // Update tab counts.
+      tabs.forEach(tab => {
+        const label = tab.textContent.trim().toLowerCase();
+        const ct = tab.querySelector('.ct');
+        if (!ct) return;
+        if (label.includes('needs')) ct.textContent = data.counts.submitted;
+        else if (label.includes('reviewing')) ct.textContent = data.counts.reviewing;
+        else if (label.includes('resolved')) ct.textContent = data.counts.resolved;
+      });
+
+      renderQueue();
+      if (reports.length) selectReport(reports[0].id);
+      else detail.innerHTML = '<div style="padding:40px; color:rgba(251,249,244,0.5)">No reports in this view.</div>';
+    } catch (err) { console.error(err); }
+  }
+
+  function renderQueue() {
+    queue.innerHTML = '';
+    if (reports.length === 0) {
+      queue.innerHTML = '<p style="color:rgba(251,249,244,0.5); padding:24px">Nothing here.</p>';
+      return;
+    }
+    // Show the reason's first part (before the " | ") as the headline.
+    for (const r of reports) {
+      const headline = r.reason.split(' | ')[0];
+      const card = document.createElement('div');
+      card.className = 'rcard' + (r.id === selectedId ? ' sel' : '');
+      card.innerHTML =
+        '<div class="top"><div class="reason">' + esc(headline) + '</div>' +
+        '<div class="when">' + timeAgo(r.created_at) + '</div></div>' +
+        '<div class="meta">' +
+          '<span class="tag ' + r.target_type + '">' + (typeLabel[r.target_type] || r.target_type) + '</span>' +
+          '<span class="status ' + r.status + '">' + r.status + '</span></div>';
+      card.addEventListener('click', () => selectReport(r.id));
+      queue.appendChild(card);
+    }
+  }
+
+  function selectReport(id) {
+    selectedId = id;
+    renderQueue();
+    const r = reports.find(x => x.id === id);
+    if (!r) return;
+
+    // Split the reason into its parts (reason | Target: ... | Details: ...).
+    const parts = r.reason.split(' | ');
+    const reasonMain = parts[0];
+    const targetPart = parts.find(p => p.startsWith('Target:'));
+    const detailsPart = parts.find(p => p.startsWith('Details:'));
+
+    detail.innerHTML =
+      '<div class="dtop"><div>' +
+        '<div class="dtitle">' + esc(reasonMain) + '</div>' +
+        '<div class="dtags"><span class="tag ' + r.target_type + '">' + (typeLabel[r.target_type] || r.target_type) + '</span>' +
+        '<span class="status ' + r.status + '">' + r.status + '</span></div>' +
+      '</div><div class="when" style="font-size:var(--size-xs); color:rgba(251,249,244,0.4)">Report #' + r.id + '</div></div>' +
+
+      '<div class="drow"><div class="dk">What / who</div><div class="dv">' + esc(targetPart ? targetPart.replace('Target:', '').trim() : '(not specified)') + '</div></div>' +
+
+      '<div class="drow"><div class="dk">What the reporter said</div><div class="dv">' + esc(detailsPart ? detailsPart.replace('Details:', '').trim() : '(no details given)') + '</div></div>' +
+
+      '<div class="drow"><div class="dk">Reporter</div><div class="reporter"><span class="rn">' + esc(r.reporter_name) + '</span> &middot; ' + esc(r.reporter_email) +
+        '<br><span style="font-size:var(--size-xs); color:rgba(251,249,244,0.4)">Submitted ' + new Date(r.created_at.replace(' ','T')+'Z').toLocaleString() + '</span></div></div>' +
+
+      (r.action_taken ? '<div class="drow"><div class="dk">Action taken</div><div class="dv">' + esc(r.action_taken) + '</div></div>' : '') +
+
+      '<div class="drow"><div class="dk">Act</div><div class="dv" id="actionZone"></div></div>';
+
+    // Action buttons based on current status.
+    const zone = detail.querySelector('#actionZone');
+    if (r.status === 'submitted') {
+      const btn = mkBtn('Start reviewing', () => updateReport(r.id, 'reviewing'));
+      zone.appendChild(btn);
+    }
+    if (r.status !== 'resolved') {
+      const resolveBtn = mkBtn('Resolve…', () => {
+        const action = prompt('What action did you take? (e.g. "Removed the work", "Warned the member", "No action needed")');
+        if (action !== null) updateReport(r.id, 'resolved', action);
+      });
+      resolveBtn.style.background = 'var(--pine)';
+      zone.appendChild(resolveBtn);
+    }
+    if (r.status === 'resolved') {
+      const note = document.createElement('span');
+      note.style.cssText = 'color:#9ec5b8; font-size:var(--size-sm)';
+      note.textContent = '\u2713 Resolved' + (r.resolved_at ? ' on ' + new Date(r.resolved_at.replace(' ','T')+'Z').toLocaleDateString() : '');
+      zone.appendChild(note);
+    }
+  }
+
+  function mkBtn(label, onClick) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = 'background:var(--ember); color:var(--paper); border:none; padding:10px 18px; border-radius:2px; font-size:14px; cursor:pointer; margin-right:8px; font-family:var(--font-body)';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  async function updateReport(id, status, actionTaken) {
+    try {
+      const res = await fetch('/api/admin/reports/' + id, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, actionTaken })
+      });
+      if (res.ok) load();
+      else alert('Could not update.');
+    } catch (err) { console.error(err); alert('Error.'); }
+  }
+
+  // Wire the filter tabs.
+  tabs.forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const label = tab.textContent.trim().toLowerCase();
+      currentStatus = label.includes('needs') ? 'submitted'
+                    : label.includes('reviewing') ? 'reviewing'
+                    : label.includes('resolved') ? 'resolved' : 'all';
+      selectedId = null;
+      load();
+    });
+  });
+
+  load();
+});
+</script>
+</html>

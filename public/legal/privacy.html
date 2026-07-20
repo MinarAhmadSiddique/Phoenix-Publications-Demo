@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy &middot; Phoenix Publications</title>
+<!-- lives in /legal/ — paths use ../ -->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* ============================================================
+     PRIVACY (legal/privacy.html) — a real legal document.
+     Plain language, matches terms.html structure/voice.
+     ⚠ DRAFT / PLACEHOLDER — privacy law is jurisdiction-specific
+     (GDPR, CCPA, etc). Must be reviewed by a lawyer or generated
+     by a proper service before launch. Not legal advice.
+     ============================================================ */
+ 
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+  .doc { max-width: 760px; margin: 0 auto; }
+ 
+  header.top { border-bottom: 1px solid var(--line); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  .top-inner .back { font-size: var(--size-sm); color: var(--stone); }
+ 
+  .draftbanner { background: var(--ink); color: var(--paper); font-size: var(--size-sm); text-align: center; padding: var(--space-3) var(--space-6); }
+  .draftbanner strong { color: var(--ember); }
+ 
+  .dochead { padding: var(--space-16) 0 var(--space-8); border-bottom: 1px solid var(--line); }
+  .dochead h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-3); }
+  .dochead .meta { font-size: var(--size-sm); color: var(--stone); }
+  .dochead .intro { font-size: var(--size-lg); line-height: 1.6; color: var(--ink); opacity: 0.9; margin-top: var(--space-6); }
+ 
+  .docbody { padding: var(--space-12) 0 var(--space-16); }
+  .docbody h2 { font-size: var(--size-xl); margin: var(--space-12) 0 var(--space-4); letter-spacing: -0.01em; }
+  .docbody h2:first-child { margin-top: 0; }
+  .docbody .num { color: var(--ember); font-family: var(--font-display); margin-right: var(--space-2); }
+  .docbody p { font-size: var(--size-base); line-height: 1.7; color: var(--ink); opacity: 0.9; margin: 0 0 var(--space-4); }
+  .docbody ul { margin: 0 0 var(--space-4); padding-left: var(--space-6); }
+  .docbody li { font-size: var(--size-base); line-height: 1.7; color: var(--ink); opacity: 0.9; margin-bottom: var(--space-2); }
+  .docbody .lead-in { font-weight: 600; opacity: 1; }
+ 
+  /* the "what we don't do" highlight — Phoenix's privacy is a trust asset */
+  .promise { background: var(--paper-2); border-left: 2px solid var(--ember); border-radius: var(--radius); padding: var(--space-6) var(--space-8); margin: var(--space-8) 0 var(--space-12); }
+  .promise .pt { font-family: var(--font-display); font-size: var(--size-lg); margin-bottom: var(--space-4); }
+  .promise ul { margin: 0; padding-left: var(--space-6); }
+  .promise li { margin-bottom: var(--space-2); }
+ 
+  .toc { background: var(--paper-2); border-radius: var(--radius); padding: var(--space-6) var(--space-8); margin-bottom: var(--space-12); }
+  .toc .tt { font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--stone); font-weight: 600; margin-bottom: var(--space-4); }
+  .toc ol { margin: 0; padding-left: var(--space-6); columns: 2; column-gap: var(--space-8); }
+  .toc li { font-size: var(--size-sm); margin-bottom: var(--space-2); line-height: 1.5; }
+  .toc a { color: var(--pine); }
+ 
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row .brand { font-size: var(--size-base); }
+  .foot-row a { color: var(--stone); }
+ 
+  @media (max-width: 600px) {
+    .dochead h1 { font-size: var(--size-2xl); }
+    .toc ol { columns: 1; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- DRAFT NOTICE — remove once replaced with lawyer-reviewed policy -->
+<div class="draftbanner"><strong>Draft &mdash;</strong> placeholder privacy policy for design only. Privacy law varies by region (GDPR, CCPA&hellip;) &mdash; must be reviewed before launch.</div>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <a class="back" href="../index.html">&larr; Back home</a>
+  </div>
+</header>
+ 
+<!-- HEAD -->
+<section class="dochead">
+  <div class="wrap doc">
+    <h1>Privacy Policy</h1>
+    <div class="meta">Last updated: [date] &middot; Effective: [date]</div>
+    <p class="intro">Your trust is the whole point of Phoenix, so we keep this simple: we collect only what we need to run the platform, we never sell your data, and you stay in control of it. Here's exactly what that means.</p>
+  </div>
+</section>
+ 
+<!-- BODY -->
+<section class="docbody">
+  <div class="wrap doc">
+ 
+    <!-- the trust-asset highlight -->
+    <div class="promise">
+      <div class="pt">What we never do</div>
+      <ul>
+        <li>We don't sell or rent your personal data to anyone.</li>
+        <li>We don't run ads, and we don't let advertisers target you.</li>
+        <li>We never see or store your card details &mdash; Stripe handles payment.</li>
+        <li>We don't email you unless you asked us to, and you can stop it in one click.</li>
+      </ul>
+    </div>
+ 
+    <div class="toc">
+      <div class="tt">What's covered</div>
+      <ol>
+        <li><a href="#a1">What we collect</a></li>
+        <li><a href="#a2">Why we collect it</a></li>
+        <li><a href="#a3">Payments</a></li>
+        <li><a href="#a4">What's public</a></li>
+        <li><a href="#a5">Email and newsletter</a></li>
+        <li><a href="#a6">Cookies</a></li>
+        <li><a href="#a7">Who we share with</a></li>
+        <li><a href="#a8">How long we keep it</a></li>
+        <li><a href="#a9">Your rights</a></li>
+        <li><a href="#a10">Children</a></li>
+        <li><a href="#a11">Security</a></li>
+        <li><a href="#a12">Changes &amp; contact</a></li>
+      </ol>
+    </div>
+ 
+    <h2 id="a1"><span class="num">1.</span> What we collect</h2>
+    <p>We collect only what Phoenix needs to work:</p>
+    <ul>
+      <li><span class="lead-in">When you sign up:</span> your name, handle, email, and a password (stored securely, never in plain text).</li>
+      <li><span class="lead-in">When you publish:</span> your work, cover, description, and the choices you make about it.</li>
+      <li><span class="lead-in">When you buy:</span> a record of what you bought, so you can re-download it.</li>
+      <li><span class="lead-in">As you use the site:</span> basic technical information like your device type and general activity, to keep things working and secure.</li>
+    </ul>
+ 
+    <h2 id="a2"><span class="num">2.</span> Why we collect it</h2>
+    <p>To give you an account, show your work to readers, process sales, pay writers, let people follow and comment, keep the platform safe, and answer you when you reach out. That's it &mdash; we don't gather data for purposes we haven't told you about.</p>
+ 
+    <h2 id="a3"><span class="num">3.</span> Payments</h2>
+    <p>Payments are processed by Stripe. When you buy or set up payouts, your card or bank details go straight to Stripe &mdash; Phoenix never sees or stores them. We keep only a record of the transaction (what was bought, when, and how much) so we can show your purchases and earnings. Stripe has its own privacy policy that covers how it handles your payment information.</p>
+ 
+    <h2 id="a4"><span class="num">4.</span> What's public</h2>
+    <p>Some things are public by design: your handle, your profile and bio if you make it public, the works you publish, and comments you post. Pure readers who haven't published can keep their profile private. Your email, password, purchase history, and payout details are always private.</p>
+ 
+    <h2 id="a5"><span class="num">5.</span> Email and newsletter</h2>
+    <p>We email you about your account (things like a sale, a follow, or a password change) and, only if you opted in, our newsletter. Every newsletter has a working one-click unsubscribe, and unsubscribing is honored promptly. You can change your email preferences any time in your settings.</p>
+ 
+    <h2 id="a6"><span class="num">6.</span> Cookies</h2>
+    <p>We use a small number of cookies that are necessary to keep you logged in and the site functioning. We don't use advertising or cross-site tracking cookies. Where the law requires it, we'll ask your consent for anything beyond the strictly necessary &mdash; and default to the most private option. <em>[Cookie specifics depend on the analytics and tools Phoenix ends up using &mdash; finalise before launch.]</em></p>
+ 
+    <h2 id="a7"><span class="num">7.</span> Who we share with</h2>
+    <p>We share personal data only with the services that make Phoenix run &mdash; for example Stripe for payments and our hosting and email providers &mdash; and only as much as each needs to do its job. We may disclose information if the law requires it, or to protect the safety of people on the platform. We never sell your data.</p>
+ 
+    <h2 id="a8"><span class="num">8.</span> How long we keep it</h2>
+    <p>We keep your data while your account is open. When you close your account, we remove your profile and published work, though we may keep limited records we're legally required to (for example, transaction records for tax). Readers keep copies of works they already bought.</p>
+ 
+    <h2 id="a9"><span class="num">9.</span> Your rights</h2>
+    <p>Depending on where you live, you may have the right to see the data we hold about you, correct it, download it, or ask us to delete it. You can do much of this directly in your settings; for anything else, contact us and we'll help. We won't charge you for reasonable requests, and we won't penalise you for making one.</p>
+ 
+    <h2 id="a10"><span class="num">10.</span> Children</h2>
+    <p>Phoenix is for adults &mdash; you must be 18 or older to hold an account. We don't knowingly collect data from children. Works marked for younger audiences describe who the writing is for; they don't mean children hold accounts. If you believe a child has given us data, contact us and we'll remove it.</p>
+ 
+    <h2 id="a11"><span class="num">11.</span> Security</h2>
+    <p>We protect your data with industry-standard measures: encrypted connections, securely hashed passwords, and access limited to what's needed to run the platform. No system is perfectly secure, but we take this seriously and will tell you promptly if something affecting your data goes wrong. <em>[Breach-notification duties are legally specific &mdash; confirm requirements for the regions Phoenix serves.]</em></p>
+ 
+    <h2 id="a12"><span class="num">12.</span> Changes &amp; contact</h2>
+    <p>If we change this policy in a meaningful way, we'll let members know and update the date above. For any privacy question or request, reach us at [contact email]. To report something that shouldn't be on Phoenix, use the <a href="report.html">report form</a>.</p>
+ 
+  </div>
+</section>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div>
+        <a href="../search.html">Browse</a> &nbsp;&middot;&nbsp;
+        <a href="terms.html">Terms</a> &nbsp;&middot;&nbsp;
+        <a href="privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
+        <a href="report.html">Report something</a>
+      </div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+ 
+</body>
+</html>

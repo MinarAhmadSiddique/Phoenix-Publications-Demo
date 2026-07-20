@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  /* ============================================================
+     LOG IN — internal CSS, brand vars from tokens.css.
+     Two panels: the welcome message (mission) + the form.
+     The message reminds the writer what they're part of.
+     NOTE: form has no action/JS yet — design phase only.
+     ============================================================ */
+ 
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+ 
+  /* slim top bar — just the brand, this page is focused */
+  header.top { border-bottom: 1px solid var(--line); }
+  .top-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand {
+    font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg);
+    color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2);
+  }
+  .brand .mark { color: var(--ember); }
+  .top-inner .back { font-size: var(--size-sm); color: var(--stone); }
+ 
+  /* ---- two-panel split ---- */
+  .split { flex: 1; display: grid; grid-template-columns: 1.05fr 0.95fr; }
+ 
+  /* LEFT — the message panel */
+  .welcome {
+    background: var(--ink); color: var(--paper);
+    padding: var(--space-24) var(--space-16);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .welcome .eyebrow {
+    font-size: var(--size-xs); letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ember); font-weight: 600; margin-bottom: var(--space-8);
+  }
+  .welcome h1 {
+    font-family: var(--font-display); font-weight: 500; font-size: var(--size-3xl);
+    line-height: 1.12; letter-spacing: -0.02em; color: var(--paper);
+    max-width: 16ch; margin-bottom: var(--space-8);
+  }
+  .welcome h1 em { font-style: italic; color: var(--ember); }
+  .welcome p {
+    font-size: var(--size-lg); line-height: 1.55; color: rgba(251,249,244,0.82);
+    max-width: 44ch; margin: 0 0 var(--space-6);
+  }
+  .welcome .sign {
+    margin-top: var(--space-8); font-family: var(--font-display); font-style: italic;
+    font-size: var(--size-base); color: rgba(251,249,244,0.6);
+  }
+ 
+  /* RIGHT — the form panel */
+  .formpane {
+    padding: var(--space-24) var(--space-16);
+    display: flex; flex-direction: column; justify-content: center;
+    background: var(--paper);
+  }
+  .formpane .inner { width: 100%; max-width: 380px; margin: 0 auto; }
+  .formpane h2 { font-size: var(--size-2xl); margin-bottom: var(--space-2); letter-spacing: -0.01em; }
+  .formpane .lead { font-size: var(--size-sm); color: var(--stone); margin-bottom: var(--space-8); }
+ 
+  .field { margin-bottom: var(--space-6); }
+  .field label {
+    display: block; font-size: var(--size-sm); font-weight: 500;
+    margin-bottom: var(--space-2); color: var(--ink);
+  }
+  .field input {
+    width: 100%; font-family: var(--font-body); font-size: var(--size-base);
+    padding: var(--space-3) var(--space-4); border: 1px solid var(--line);
+    border-radius: var(--radius); background: var(--paper); color: var(--ink);
+    transition: border-color .15s;
+  }
+  .field input:focus { outline: none; border-color: var(--ember); }
+  .field .row { display: flex; justify-content: space-between; align-items: baseline; }
+  .field .row a { font-size: var(--size-xs); color: var(--pine); }
+ 
+  .btn-primary {
+    width: 100%; font-family: var(--font-body); font-size: var(--size-base); font-weight: 500;
+    padding: var(--space-3) var(--space-4); border: 1px solid var(--ink);
+    border-radius: var(--radius); background: var(--ink); color: var(--paper);
+    cursor: pointer; transition: background .15s, border-color .15s; margin-top: var(--space-2);
+  }
+  .btn-primary:hover { background: var(--ember); border-color: var(--ember); }
+ 
+  .divider {
+    display: flex; align-items: center; gap: var(--space-4);
+    margin: var(--space-8) 0; color: var(--stone); font-size: var(--size-xs);
+  }
+  .divider::before, .divider::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+ 
+  .alt { text-align: center; font-size: var(--size-sm); color: var(--ink); }
+  .alt a { color: var(--ember); font-weight: 500; }
+ 
+  .formpane .fineprint { margin-top: var(--space-8); font-size: var(--size-xs); color: var(--stone); text-align: center; line-height: 1.5; }
+  .formpane .fineprint a { color: var(--stone); text-decoration: underline; }
+ 
+  /* ---- responsive: stack, message first ---- */
+  @media (max-width: 880px) {
+    .split { grid-template-columns: 1fr; }
+    .welcome { padding: var(--space-16) var(--space-8); }
+    .welcome h1 { font-size: var(--size-2xl); }
+    .welcome p { font-size: var(--size-base); }
+    .formpane { padding: var(--space-16) var(--space-8); }
+  }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <a class="back" href="index.html">&larr; Back home</a>
+  </div>
+</header>
+ 
+<main class="split">
+ 
+  <!-- LEFT: the encouraging message -->
+  <section class="welcome">
+    <div class="eyebrow">Welcome back</div>
+    <h1>You're not just publishing. You're shaping what gets <em>read next.</em></h1>
+    <p>Every book you put here, every reader you reach, makes a little more room for honest, original work in a world that usually rewards the loudest and the already-famous.</p>
+    <p>The writing that matters tomorrow is being made by people like you today &mdash; quietly, stubbornly, one page at a time. Thank you for making yours.</p>
+    <div class="sign">&mdash; The Phoenix team</div>
+  </section>
+ 
+  <!-- RIGHT: the form (design only, no action/JS) -->
+  <section class="formpane">
+    <div class="inner">
+      <h2>Log in</h2>
+      <div class="lead">Pick up where you left off.</div>
+ 
+      <!-- Real form: the browser sends these fields to the /login route on submit.
+           No JavaScript — this is native HTML form behaviour. -->
+      <div id="loginError" style="display:none; background:#fdecea; color:#a3271b; padding:var(--space-3) var(--space-4); border-radius:var(--radius); font-size:var(--size-sm); margin-bottom:var(--space-6);"></div>
+
+      <form action="/login" method="POST">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+ 
+        <div class="field">
+          <div class="row">
+            <label for="password">Password</label>
+            <a href="forgot-password.html">Forgot it?</a>
+          </div>
+          <input type="password" id="password" name="password" placeholder="Your password" autocomplete="current-password" required>
+        </div>
+ 
+        <button class="btn-primary" type="submit">Log in</button>
+      </form>
+ 
+      <div class="divider">new here?</div>
+ 
+      <div class="alt">First time on Phoenix? <a href="signup.html">Create an account</a></div>
+ 
+      <div class="fineprint">
+        By logging in you agree to our <a href="legal/terms.html">Terms</a> and <a href="legal/privacy.html">Privacy Policy</a>.
+      </div>
+    </div>
+  </section>
+
+</main>
+ <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get('error');
+  if (!error) return;
+  const box = document.getElementById('loginError');
+  if (!box) return;
+  const messages = {
+    invalid: 'Email or password is incorrect. Please try again.',
+    suspended: 'Your account has been suspended. If you think this is a mistake, please contact us through the report form.',
+    required: 'Please enter both your email and password.'
+  };
+  box.textContent = messages[error] || 'Something went wrong. Please try again.';
+  box.style.display = 'block';
+});
+</script>
+</body>
+</html>

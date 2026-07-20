@@ -1,0 +1,304 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content &middot; Phoenix Admin</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  body { margin: 0; min-height: 100vh; background: var(--ink); color: var(--paper); font-family: var(--font-body); }
+  .abar { border-bottom: 1px solid rgba(251,249,244,0.12); padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); position: sticky; top: 0; background: var(--ink); z-index: 50; }
+  .abar .b { font-family: var(--font-display); font-weight: 600; font-size: var(--size-base); color: var(--paper); display: flex; align-items: baseline; gap: var(--space-2); }
+  .abar .b .mark { color: var(--ember); }
+  .abar nav { display: flex; gap: var(--space-6); font-size: var(--size-sm); }
+  .abar nav a { color: rgba(251,249,244,0.6); }
+  .abar nav a.here { color: var(--ember); font-weight: 500; }
+  .abar nav a:hover { color: var(--paper); text-decoration: none; }
+  .abar .out { font-size: var(--size-xs); color: rgba(251,249,244,0.4); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+  .phead { margin-bottom: var(--space-8); }
+  .phead h1 { font-family: var(--font-display); font-size: var(--size-2xl); color: var(--paper); margin-bottom: var(--space-2); }
+  .phead .sub { font-size: var(--size-sm); color: rgba(251,249,244,0.5); }
+  .controls { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); flex-wrap: wrap; }
+  .switch { display: flex; gap: var(--space-2); }
+  .swtab { font-size: var(--size-sm); padding: var(--space-2) var(--space-6); border-radius: 100px; border: 1px solid rgba(251,249,244,0.18); background: transparent; color: rgba(251,249,244,0.7); cursor: pointer; transition: all .15s; }
+  .swtab:hover { border-color: var(--ember); color: var(--paper); text-decoration: none; }
+  .swtab.active { background: var(--ember); border-color: var(--ember); color: var(--paper); font-weight: 500; }
+  .searchbar { display: flex; gap: var(--space-3); flex: 1; max-width: 360px; }
+  .searchbar input { flex: 1; font-family: var(--font-body); font-size: var(--size-sm); padding: var(--space-2) var(--space-4); border: 1px solid rgba(251,249,244,0.18); border-radius: var(--radius); background: #16130f; color: var(--paper); }
+  .searchbar input::placeholder { color: rgba(251,249,244,0.3); }
+  .searchbar input:focus { outline: none; border-color: var(--ember); }
+  .statusrow { display: flex; gap: var(--space-2); margin-bottom: var(--space-6); flex-wrap: wrap; }
+  .sf { font-size: var(--size-xs); padding: var(--space-1) var(--space-4); border-radius: 100px; border: 1px solid rgba(251,249,244,0.12); background: transparent; color: rgba(251,249,244,0.55); cursor: pointer; }
+  .sf:hover { color: var(--paper); text-decoration: none; }
+  .sf.active { background: rgba(251,249,244,0.1); color: var(--paper); }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: rgba(251,249,244,0.4); font-weight: 600; padding: var(--space-3) var(--space-4); border-bottom: 1px solid rgba(251,249,244,0.12); }
+  .tbl th.num, .tbl td.num { text-align: right; }
+  .tbl td { padding: var(--space-4); border-bottom: 1px solid rgba(251,249,244,0.08); font-size: var(--size-sm); color: rgba(251,249,244,0.85); vertical-align: middle; }
+  .tbl tr:hover td { background: rgba(251,249,244,0.02); }
+  .tbl .title { font-family: var(--font-display); font-weight: 600; font-size: var(--size-base); color: var(--paper); }
+  .tbl .title a:hover { color: var(--ember); text-decoration: none; }
+  .tbl .mini { font-size: var(--size-xs); color: rgba(251,249,244,0.4); }
+  .status { font-size: 0.66rem; padding: 1px var(--space-2); border-radius: var(--radius); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .status.live { background: rgba(61,90,82,0.4); color: #9ec5b8; }
+  .status.pending { background: rgba(251,249,244,0.12); color: rgba(251,249,244,0.7); }
+  .status.featured { background: var(--ember); color: var(--paper); }
+  .status.removed { background: rgba(181,70,46,0.2); color: #e3a08e; }
+  .status.suspended { background: rgba(181,70,46,0.2); color: #e3a08e; }
+  .ract { display: flex; gap: var(--space-3); justify-content: flex-end; }
+  .ract a { font-size: var(--size-xs); color: rgba(251,249,244,0.6); }
+  .ract a:hover { color: var(--paper); }
+  .ract a.danger { color: #e3a08e; }
+  .ract a.danger:hover { color: var(--ember); }
+  .tablenote { font-size: var(--size-xs); color: rgba(251,249,244,0.35); margin-top: var(--space-6); line-height: 1.6; }
+  .cbody { max-width: 420px; white-space: normal; }
+  @media (max-width: 820px) {
+    .abar nav { display: none; }
+    .tbl thead { display: none; }
+    .tbl, .tbl tbody, .tbl tr, .tbl td { display: block; width: 100%; }
+    .tbl tr { border: 1px solid rgba(251,249,244,0.12); border-radius: var(--radius); margin-bottom: var(--space-3); padding: var(--space-2); }
+    .tbl td { border: none; padding: var(--space-2) var(--space-4); }
+    .tbl td.num, .ract { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+ 
+<div class="abar">
+  <div class="b"><span class="mark">&#10022;</span> Phoenix Admin</div>
+  <nav>
+    <a href="curation.html">Curation</a>
+    <a href="adminReports.html">Reports</a>
+    <a class="here" href="contentManage.html">Content</a>
+    <a href="sendNewsletter.html">Newsletter</a>
+  </nav>
+  <span class="out">Signed in &middot; <a href="/admin/logout" style="color:rgba(251,249,244,0.7)">Log out</a></span>
+</div>
+ 
+<div class="wrap">
+ 
+  <div class="phead">
+    <h1>Content</h1>
+    <div class="sub">Everything on Phoenix, in one place. Browse works, members, and comments, and step in when you need to.</div>
+  </div>
+ 
+  <div class="controls">
+    <div class="switch">
+      <a class="swtab active" href="#" data-tab="works">Works <span style="opacity:.6">0</span></a>
+      <a class="swtab" href="#" data-tab="members">Members <span style="opacity:.6">0</span></a>
+      <a class="swtab" href="#" data-tab="comments">Comments <span style="opacity:.6">0</span></a>
+    </div>
+    <div class="searchbar">
+      <input type="search" placeholder="Search…">
+    </div>
+  </div>
+ 
+  <div class="statusrow">
+    <a class="sf active" href="#">All</a>
+    <a class="sf" href="#">Live</a>
+    <a class="sf" href="#">In review</a>
+    <a class="sf" href="#">Featured</a>
+    <a class="sf" href="#">Removed</a>
+  </div>
+ 
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Title</th><th>Publisher</th><th>Type</th>
+        <th class="num">Price</th><th class="num">Sales</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+ 
+  <div class="tablenote" id="tablenote">
+    Removing a work takes it off the shelf immediately. Works nobody bought are permanently deleted and can't be recovered. Works people bought stay available to those buyers. Suspending a member blocks their sign-in until you restore them. Every action here is deliberate.
+  </div>
+ 
+</div>
+ 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tbody = document.querySelector('.tbl tbody');
+  const thead = document.querySelector('.tbl thead tr');
+  const swtabs = document.querySelectorAll('.swtab');
+  const statusRow = document.querySelector('.statusrow');
+  const statusFilters = document.querySelectorAll('.statusrow .sf');
+  const searchInput = document.querySelector('.searchbar input');
+  let mode = 'works';
+  let currentStatus = 'all';
+ 
+  function esc(s){ return (s||'').replace(/</g,'&lt;'); }
+  function price(c){ return c===0 ? 'Free' : '$'+(c/100).toFixed(2); }
+  function fmtDate(s){ return new Date(s.replace(' ','T')+'Z').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}); }
+  function statusBadge(s, featured){
+    if (featured) return '<span class="status featured">Featured</span>';
+    const cls={live:'live',pending:'pending',removed:'removed',rejected:'removed'};
+    const lbl={live:'Live',pending:'In review',removed:'Removed',rejected:'Rejected'};
+    return '<span class="status '+(cls[s]||'pending')+'">'+(lbl[s]||s)+'</span>';
+  }
+ 
+  // ---- WORKS ----
+  async function loadWorks(){
+    const search = searchInput ? searchInput.value.trim() : '';
+    thead.innerHTML = '<th>Title</th><th>Publisher</th><th>Type</th><th class="num">Price</th><th class="num">Sales</th><th>Status</th><th>Actions</th>';
+    const res = await fetch('/api/admin/books?status='+currentStatus+(search?'&search='+encodeURIComponent(search):''));
+    if (!res.ok){ tbody.innerHTML='<tr><td colspan="7" style="padding:24px;color:rgba(251,249,244,0.5)">Admin only.</td></tr>'; return; }
+    const data = await res.json();
+    const wc = document.querySelector('.swtab[data-tab="works"] span');
+    if (wc) wc.textContent = data.total;
+    tbody.innerHTML='';
+    if (!data.books.length){ tbody.innerHTML='<tr><td colspan="7" style="padding:24px;color:rgba(251,249,244,0.5)">No works in this view.</td></tr>'; return; }
+    for (const b of data.books){
+      let a='<a href="../bookDetail.html?id='+b.id+'">View</a> ';
+      if (b.status==='pending') a+='<a href="#" data-approve="'+b.id+'">Approve</a> <a class="danger" href="#" data-reject="'+b.id+'">Reject</a>';
+      else if (b.status==='live') a+='<a class="danger" href="#" data-remove="'+b.id+'">Remove</a>';
+      else if (b.status==='removed'||b.status==='rejected') a+='<a href="#" data-restore="'+b.id+'">Restore</a>';
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td class="title"><a href="../bookDetail.html?id='+b.id+'">'+esc(b.title)+'</a></td>'+
+        '<td>'+esc(b.publisher)+'</td>'+
+        '<td class="mini">'+esc(b.content_type)+(b.category?' &middot; '+esc(b.category):'')+'</td>'+
+        '<td class="num">'+price(b.price_cents)+'</td>'+
+        '<td class="num">'+b.sales+'</td>'+
+        '<td>'+statusBadge(b.status,b.is_featured)+'</td>'+
+        '<td><div class="ract">'+a+'</div></td>';
+      tbody.appendChild(tr);
+    }
+  }
+ 
+  // ---- MEMBERS ----
+  async function loadMembers(){
+    const search = searchInput ? searchInput.value.trim() : '';
+    thead.innerHTML = '<th>Name</th><th>Handle</th><th>Email</th><th class="num">Works</th><th class="num">Followers</th><th>Joined</th><th>Actions</th>';
+    const res = await fetch('/api/admin/members'+(search?'?search='+encodeURIComponent(search):''));
+    if (!res.ok){ tbody.innerHTML='<tr><td colspan="7" style="padding:24px;color:rgba(251,249,244,0.5)">Admin only.</td></tr>'; return; }
+    const data = await res.json();
+    const mc = document.querySelector('.swtab[data-tab="members"] span');
+    if (mc) mc.textContent = data.total;
+    tbody.innerHTML='';
+    if (!data.members.length){ tbody.innerHTML='<tr><td colspan="7" style="padding:24px;color:rgba(251,249,244,0.5)">No members found.</td></tr>'; return; }
+    for (const m of data.members){
+      const adminTag = m.is_admin ? ' <span class="status featured">Admin</span>' : '';
+      const suspTag = m.suspended ? ' <span class="status suspended">Suspended</span>' : '';
+      const vis = m.profile_visibility === 'public' ? '' : ' <span class="mini" style="color:rgba(251,249,244,0.4)">(private)</span>';
+      let actions = '<a href="../memberProfile.html?handle='+encodeURIComponent(m.handle)+'">View</a> ';
+      // Don't allow suspending an admin account from here.
+      if (!m.is_admin) {
+        actions += m.suspended
+          ? '<a href="#" data-restore-member="'+m.id+'">Restore</a>'
+          : '<a class="danger" href="#" data-suspend-member="'+m.id+'">Suspend</a>';
+      }
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td class="title">'+esc(m.display_name)+adminTag+suspTag+vis+'</td>'+
+        '<td>@'+esc(m.handle)+'</td>'+
+        '<td class="mini">'+esc(m.email)+'</td>'+
+        '<td class="num">'+m.works+'</td>'+
+        '<td class="num">'+m.followers+'</td>'+
+        '<td class="mini">'+fmtDate(m.created_at)+'</td>'+
+        '<td><div class="ract">'+actions+'</div></td>';
+      tbody.appendChild(tr);
+    }
+  }
+ 
+  // ---- COMMENTS ----
+  async function loadComments(){
+    const search = searchInput ? searchInput.value.trim() : '';
+    thead.innerHTML = '<th>Comment</th><th>By</th><th>On</th><th>When</th><th>Actions</th>';
+    const res = await fetch('/api/admin/comments'+(search?'?search='+encodeURIComponent(search):''));
+    if (!res.ok){ tbody.innerHTML='<tr><td colspan="5" style="padding:24px;color:rgba(251,249,244,0.5)">Admin only.</td></tr>'; return; }
+    const data = await res.json();
+    const cc = document.querySelector('.swtab[data-tab="comments"] span');
+    if (cc) cc.textContent = data.total;
+    tbody.innerHTML='';
+    if (!data.comments.length){ tbody.innerHTML='<tr><td colspan="5" style="padding:24px;color:rgba(251,249,244,0.5)">No comments.</td></tr>'; return; }
+    for (const c of data.comments){
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td class="cbody">'+esc(c.body)+(c.edited_at?' <span class="mini">(edited)</span>':'')+'</td>'+
+        '<td>'+esc(c.author_name)+'<div class="mini">@'+esc(c.author_handle)+'</div></td>'+
+        '<td class="mini"><a href="../bookDetail.html?id='+c.book_id+'">'+esc(c.book_title)+'</a></td>'+
+        '<td class="mini">'+fmtDate(c.created_at)+'</td>'+
+        '<td><div class="ract"><a class="danger" href="#" data-delete-comment="'+c.id+'">Delete</a></div></td>';
+      tbody.appendChild(tr);
+    }
+  }
+ 
+  function load(){
+    if (mode==='works') loadWorks();
+    else if (mode==='members') loadMembers();
+    else loadComments();
+  }
+ 
+  // Tab switching.
+  swtabs.forEach(tab=>{
+    tab.addEventListener('click', e=>{
+      e.preventDefault();
+      swtabs.forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      mode = tab.dataset.tab;
+      if (statusRow) statusRow.style.display = (mode==='works') ? '' : 'none';
+      if (searchInput) searchInput.value = '';
+      currentStatus = 'all';
+      statusFilters.forEach(x=>x.classList.remove('active'));
+      if (statusFilters[0]) statusFilters[0].classList.add('active');
+      load();
+    });
+  });
+ 
+  // Row actions (all modes, dispatched by data-* attribute).
+  tbody.addEventListener('click', async (e)=>{
+    const t=e.target;
+    const approve=t.getAttribute('data-approve'), reject=t.getAttribute('data-reject');
+    const remove=t.getAttribute('data-remove'), restore=t.getAttribute('data-restore');
+    const suspendId=t.getAttribute('data-suspend-member'), restoreMemberId=t.getAttribute('data-restore-member');
+    const delComment=t.getAttribute('data-delete-comment');
+    if (!approve&&!reject&&!remove&&!restore&&!suspendId&&!restoreMemberId&&!delComment) return;
+    e.preventDefault();
+    try {
+      if (approve||reject){
+        await fetch('/api/admin/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bookId:Number(approve||reject),action:approve?'approve':'reject'})});
+        loadWorks();
+      } else if (remove){
+        if(!confirm('Remove this work?\n\nIf no one bought it, it is PERMANENTLY deleted and cannot be recovered. If it has buyers, it comes off public display but they keep their copies.')) return;
+        const r=await fetch('/api/admin/book/'+remove+'/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        const d=await r.json();
+        alert(d.deleted ? 'Permanently deleted (no purchases).' : 'Off public display. '+(d.buyers||0)+' buyer(s) keep their copies.');
+        loadWorks();
+      } else if (restore){
+        await fetch('/api/admin/book/'+restore+'/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        loadWorks();
+      } else if (suspendId){
+        if(!confirm('Suspend this member? They won\'t be able to sign in until you restore them. Their works and purchases are untouched.')) return;
+        await fetch('/api/admin/member/'+suspendId+'/suspend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({suspend:'yes'})});
+        loadMembers();
+      } else if (restoreMemberId){
+        await fetch('/api/admin/member/'+restoreMemberId+'/suspend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({suspend:'no'})});
+        loadMembers();
+      } else if (delComment){
+        if(!confirm('Delete this comment permanently? This cannot be undone.')) return;
+        await fetch('/api/admin/comment/'+delComment+'/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+        loadComments();
+      }
+    } catch(err){ console.error(err); alert('Could not complete that action.'); }
+  });
+ 
+  // Status filters (works only).
+  statusFilters.forEach(sf=>{
+    sf.addEventListener('click', e=>{
+      e.preventDefault();
+      statusFilters.forEach(x=>x.classList.remove('active'));
+      sf.classList.add('active');
+      const l=sf.textContent.trim().toLowerCase();
+      currentStatus = l==='live'?'live' : l.includes('review')?'pending' : l==='featured'?'featured' : l==='removed'?'removed' : 'all';
+      loadWorks();
+    });
+  });
+ 
+  if (searchInput) searchInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){e.preventDefault();load();} });
+ 
+  load();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curation &middot; Phoenix Admin</title>
+<!-- lives in /admin/ — paths use ../ -->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* ============================================================
+     ADMIN CURATION (admin/curation.html) — THE HEART.
+     The one human-judgment act the whole platform supports.
+     Two halves:
+       (1) THE FRONT — manage currently featured works (position,
+           curator_note, featured_until). Maps to featured table.
+       (2) CANDIDATES — browse live works and elevate one, writing
+           the note that becomes Phoenix's differentiator.
+     Control-room dark style. Design only, no JS. Sample data.
+     ============================================================ */
+ 
+  body { margin: 0; min-height: 100vh; background: var(--ink); color: var(--paper); font-family: var(--font-body); }
+ 
+  .abar { border-bottom: 1px solid rgba(251,249,244,0.12); padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); position: sticky; top: 0; background: var(--ink); z-index: 50; }
+  .abar .b { font-family: var(--font-display); font-weight: 600; font-size: var(--size-base); color: var(--paper); display: flex; align-items: baseline; gap: var(--space-2); }
+  .abar .b .mark { color: var(--ember); }
+  .abar nav { display: flex; gap: var(--space-6); font-size: var(--size-sm); }
+  .abar nav a { color: rgba(251,249,244,0.6); }
+  .abar nav a.here { color: var(--ember); font-weight: 500; }
+  .abar nav a:hover { color: var(--paper); text-decoration: none; }
+  .abar .out { font-size: var(--size-xs); color: rgba(251,249,244,0.4); }
+ 
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+ 
+  .phead { margin-bottom: var(--space-8); max-width: 70ch; }
+  .phead h1 { font-family: var(--font-display); font-size: var(--size-2xl); color: var(--paper); margin-bottom: var(--space-3); }
+  .phead .sub { font-size: var(--size-base); color: rgba(251,249,244,0.6); line-height: 1.6; }
+  .phead .sub em { color: var(--ember); font-style: italic; }
+ 
+  .sectitle { display: flex; align-items: baseline; justify-content: space-between; margin: var(--space-12) 0 var(--space-6); gap: var(--space-4); }
+  .sectitle h2 { font-family: var(--font-display); font-size: var(--size-xl); color: var(--paper); }
+  .sectitle .note { font-size: var(--size-sm); color: rgba(251,249,244,0.45); }
+ 
+  /* ---- THE FRONT: featured list, ordered by position ---- */
+  .featured { display: flex; flex-direction: column; gap: var(--space-3); }
+  .fcard { display: grid; grid-template-columns: auto 54px 1fr auto; gap: var(--space-5); align-items: center; border: 1px solid rgba(251,249,244,0.12); border-left: 3px solid var(--ember); border-radius: var(--radius); padding: var(--space-5); background: #1f1b16; }
+  .fcard .pos { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); color: rgba(251,249,244,0.4); }
+  .fcard .pos .n { font-family: var(--font-display); font-size: var(--size-lg); font-weight: 600; color: var(--paper); }
+  .fcard .pos .arrows { font-size: var(--size-xs); cursor: pointer; }
+  .fcard .cov { width: 54px; height: 76px; border-radius: var(--radius); background: linear-gradient(150deg, var(--pine), var(--ink)); }
+  .fcard:nth-child(2) .cov { background: linear-gradient(150deg, var(--ember), #6e2417); }
+  .fcard:nth-child(3) .cov { background: linear-gradient(150deg, #4a4036, var(--ink)); }
+  .fcard .info .ft { font-family: var(--font-display); font-weight: 600; font-size: var(--size-base); color: var(--paper); margin-bottom: var(--space-1); }
+  .fcard .info .fa { font-size: var(--size-xs); color: rgba(251,249,244,0.5); margin-bottom: var(--space-2); }
+  .fcard .info .fnote { font-family: var(--font-display); font-style: italic; font-size: var(--size-sm); color: #e3a08e; line-height: 1.4; max-width: 60ch; }
+  .fcard .info .fexp { font-size: var(--size-xs); color: rgba(251,249,244,0.4); margin-top: var(--space-2); }
+  .fcard .fact { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-end; }
+  .fcard .fact a { font-size: var(--size-xs); color: rgba(251,249,244,0.6); }
+  .fcard .fact a:hover { color: var(--paper); }
+  .fcard .fact a.pull { color: #e3a08e; }
+  .fcard .fact a.pull:hover { color: var(--ember); }
+ 
+  /* ---- CANDIDATES + elevate composer ---- */
+  .twocol { display: grid; grid-template-columns: 1fr 380px; gap: var(--space-8); align-items: start; }
+ 
+  .searchbar { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); }
+  .searchbar input { flex: 1; font-family: var(--font-body); font-size: var(--size-sm); padding: var(--space-2) var(--space-4); border: 1px solid rgba(251,249,244,0.18); border-radius: var(--radius); background: #16130f; color: var(--paper); }
+  .searchbar input::placeholder { color: rgba(251,249,244,0.3); }
+  .searchbar input:focus { outline: none; border-color: var(--ember); }
+  .hintrow { font-size: var(--size-xs); color: rgba(251,249,244,0.4); margin-bottom: var(--space-5); }
+ 
+  .candidates { display: flex; flex-direction: column; gap: var(--space-3); }
+  .ccard { display: grid; grid-template-columns: 44px 1fr auto; gap: var(--space-4); align-items: center; border: 1px solid rgba(251,249,244,0.1); border-radius: var(--radius); padding: var(--space-4); background: #1f1b16; cursor: pointer; transition: border-color .15s; }
+  .ccard:hover { border-color: rgba(251,249,244,0.3); }
+  .ccard.sel { border-color: var(--ember); }
+  .ccard .cov { width: 44px; height: 60px; border-radius: 2px; background: linear-gradient(150deg, var(--pine), var(--ink)); }
+  .ccard:nth-child(odd) .cov { background: linear-gradient(150deg, #4a4036, var(--ink)); }
+  .ccard .ci .ct { font-family: var(--font-display); font-weight: 600; font-size: var(--size-sm); color: var(--paper); margin-bottom: 2px; }
+  .ccard .ci .ca { font-size: var(--size-xs); color: rgba(251,249,244,0.5); }
+  .ccard .cstat { font-size: var(--size-xs); color: rgba(251,249,244,0.4); text-align: right; }
+  .ccard .cstat .new { color: #9ec5b8; font-weight: 600; }
+ 
+  /* elevate composer (sticky) */
+  .composer { border: 1px solid var(--ember); border-radius: var(--radius); padding: var(--space-6); background: #1f1b16; position: sticky; top: 92px; }
+  .composer h3 { font-family: var(--font-display); font-size: var(--size-lg); color: var(--paper); margin-bottom: var(--space-2); }
+  .composer .csub { font-size: var(--size-xs); color: rgba(251,249,244,0.5); margin-bottom: var(--space-6); line-height: 1.5; }
+  .composer .picked { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3); background: #16130f; border-radius: var(--radius); margin-bottom: var(--space-6); }
+  .composer .picked .pc { width: 36px; height: 50px; border-radius: 2px; background: linear-gradient(150deg, var(--ember), #6e2417); flex-shrink: 0; }
+  .composer .picked .pt { font-family: var(--font-display); font-weight: 600; font-size: var(--size-sm); color: var(--paper); }
+  .composer .picked .pa { font-size: var(--size-xs); color: rgba(251,249,244,0.5); }
+ 
+  .cfield { margin-bottom: var(--space-5); }
+  .cfield label { display: block; font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: rgba(251,249,244,0.5); font-weight: 600; margin-bottom: var(--space-2); }
+  .cfield textarea { width: 100%; font-family: var(--font-display); font-size: var(--size-base); font-style: italic; padding: var(--space-3) var(--space-4); border: 1px solid rgba(251,249,244,0.18); border-radius: var(--radius); background: #16130f; color: #e3a08e; resize: vertical; min-height: 100px; line-height: 1.5; }
+  .cfield textarea:focus { outline: none; border-color: var(--ember); }
+  .cfield .ch { font-size: var(--size-xs); color: rgba(251,249,244,0.35); margin-top: var(--space-2); line-height: 1.4; }
+  .cfield .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .cfield input, .cfield select { width: 100%; font-family: var(--font-body); font-size: var(--size-sm); padding: var(--space-2) var(--space-3); border: 1px solid rgba(251,249,244,0.18); border-radius: var(--radius); background: #16130f; color: var(--paper); }
+  .cfield input:focus, .cfield select:focus { outline: none; border-color: var(--ember); }
+ 
+  .btn-feature { width: 100%; font-family: var(--font-body); font-size: var(--size-base); font-weight: 500; padding: var(--space-3); border: 1px solid var(--ember); border-radius: var(--radius); background: var(--ember); color: var(--paper); cursor: pointer; transition: opacity .15s; margin-top: var(--space-2); }
+  .btn-feature:hover { opacity: 0.9; }
+ 
+  @media (max-width: 900px) {
+    .abar nav { display: none; }
+    .twocol { grid-template-columns: 1fr; }
+    .composer { position: static; }
+    .fcard { grid-template-columns: auto 1fr; }
+    .fcard .cov, .fcard .fact { display: none; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ADMIN BAR -->
+<div class="abar">
+  <div class="b"><span class="mark">&#10022;</span> Phoenix Admin</div>
+  <nav>
+    <a class="here" href="curation.html">Curation</a>
+    <a href="adminReports.html">Reports</a>
+    <a href="contentManage.html">Content</a>
+    <a href="sendNewsletter.html">Newsletter</a>
+  </nav>
+ <span class="out">Signed in &middot; <a href="/admin/logout" style="color:rgba(251,249,244,0.7)">Log out</a></span>
+</div>
+ 
+<div class="wrap">
+ 
+  <div class="phead">
+    <h1>Curation</h1>
+    <div class="sub">This is the one thing no algorithm can do. Choose work worth lifting up, and say <em>why</em> in your own words &mdash; that note is what makes Phoenix Phoenix. Keep the front small enough that being here still means something.</div>
+  </div>
+ 
+  <!-- ===== THE FRONT (currently featured) ===== -->
+  <div class="sectitle">
+    <h2>The front</h2>
+    <span class="note">5 works featured &middot; shown on the homepage in this order</span>
+  </div>
+ 
+  <div class="featured">
+    <!-- featured item: position + cover + note + expiry -->
+    <div class="fcard">
+      <div class="pos"><span class="arrows">&#9650;</span><span class="n">1</span><span class="arrows">&#9660;</span></div>
+      <div class="cov"></div>
+      <div class="info">
+        <div class="ft">The Salt in the Letter</div>
+        <div class="fa">Ayanna Okeb-Hart &middot; Literary Fiction</div>
+        <div class="fnote">"A debut that writes grief without a single cliché. I read the first chapter standing up and didn't sit down until the end."</div>
+        <div class="fexp">Featured until 10 July &middot; 14 days left</div>
+      </div>
+      <div class="fact"><a href="#">Edit note</a><a href="../bookDetail.html">View</a><a class="pull" href="#">Remove</a></div>
+    </div>
+ 
+    <div class="fcard">
+      <div class="pos"><span class="arrows">&#9650;</span><span class="n">2</span><span class="arrows">&#9660;</span></div>
+      <div class="cov"></div>
+      <div class="info">
+        <div class="ft">Small Systems, Big Patience</div>
+        <div class="fa">Devraj Menon &middot; Technology</div>
+        <div class="fnote">"The rare engineering writing that respects your time. From a developer nobody's heard of — yet."</div>
+        <div class="fexp">Featured until 3 July &middot; 7 days left</div>
+      </div>
+      <div class="fact"><a href="#">Edit note</a><a href="../bookDetail.html">View</a><a class="pull" href="#">Remove</a></div>
+    </div>
+ 
+    <div class="fcard">
+      <div class="pos"><span class="arrows">&#9650;</span><span class="n">3</span><span class="arrows">&#9660;</span></div>
+      <div class="cov"></div>
+      <div class="info">
+        <div class="ft">Field Notes from the Night Shift</div>
+        <div class="fa">Carmen Ruiz-Adler &middot; Memoir</div>
+        <div class="fnote">"A nurse's account of the hours most of us sleep through. Exactly the kind of voice that usually goes unheard."</div>
+        <div class="fexp">Featured until 28 June &middot; 2 days left</div>
+      </div>
+      <div class="fact"><a href="#">Edit note</a><a href="../bookDetail.html">View</a><a class="pull" href="#">Remove</a></div>
+    </div>
+  </div>
+ 
+  <!-- ===== CANDIDATES + ELEVATE ===== -->
+  <div class="sectitle">
+    <h2>Lift something up</h2>
+    <span class="note">Browse what's live. Look for the good ones nobody's noticed.</span>
+  </div>
+ 
+  <div class="twocol">
+ 
+    <!-- candidate list -->
+    <div>
+      <div class="searchbar">
+        <input type="search" placeholder="Search live works by title, author, category…">
+      </div>
+      <div class="hintrow">Sorted to surface promising work with little attention yet &mdash; the writers who most need lifting.</div>
+ 
+      <div class="candidates">
+        <div class="ccard sel">
+          <div class="cov"></div>
+          <div class="ci"><div class="ct">Borrowed Light</div><div class="ca">Idris Khan &middot; Fiction &middot; $4.00</div></div>
+          <div class="cstat"><span class="new">New</span><br>28 readers</div>
+        </div>
+        <div class="ccard">
+          <div class="cov"></div>
+          <div class="ci"><div class="ct">A Short History of Almost Quitting</div><div class="ca">Marcus Bell &middot; Memoir &middot; $5.00</div></div>
+          <div class="cstat">67 readers</div>
+        </div>
+        <div class="ccard">
+          <div class="cov"></div>
+          <div class="ci"><div class="ct">Grid &amp; Grace</div><div class="ca">Priya Nandakumar &middot; Research &middot; $8.00</div></div>
+          <div class="cstat"><span class="new">New</span><br>12 readers</div>
+        </div>
+        <div class="ccard">
+          <div class="cov"></div>
+          <div class="ci"><div class="ct">Teaching the Edge</div><div class="ca">Helen Mwangi &middot; Education &middot; $6.50</div></div>
+          <div class="cstat"><span class="new">New</span><br>9 readers</div>
+        </div>
+        <div class="ccard">
+          <div class="cov"></div>
+          <div class="ci"><div class="ct">The Founder's Quiet Year</div><div class="ca">Sam Oduya &middot; Business &middot; $7.00</div></div>
+          <div class="cstat">41 readers</div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- elevate composer -->
+    <div class="composer">
+      <h3>Feature this work</h3>
+      <div class="csub">Lifting a writer onto the front. Take a moment with the note &mdash; it carries your name and Phoenix's.</div>
+ 
+      <div class="picked">
+        <div class="pc"></div>
+        <div>
+          <div class="pt">Borrowed Light</div>
+          <div class="pa">Idris Khan &middot; Fiction</div>
+        </div>
+      </div>
+ 
+      <div class="cfield">
+        <label>Why you chose it</label>
+        <textarea placeholder="Say it the way you'd tell a friend. What made you stop? This is the note readers will see."></textarea>
+        <div class="ch">Appears on the homepage, the book's page, and anywhere it's featured. Honest and specific beats clever.</div>
+      </div>
+ 
+      <div class="cfield">
+        <div class="two">
+          <div>
+            <label>Position</label>
+            <select><option>Top of front</option><option>2nd</option><option>3rd</option><option>Next open spot</option></select>
+          </div>
+          <div>
+            <label>Feature until</label>
+            <input type="text" placeholder="10 Jul 2026">
+          </div>
+        </div>
+      </div>
+ 
+      <button class="btn-feature" type="button">Lift it up</button>
+    </div>
+ 
+  </div>
+ 
+</div>
+ <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const frontList = document.querySelector('.featured');
+  const candidateList = document.querySelector('.candidates');
+  const searchInput = document.querySelector('.searchbar input');
+  let selectedCandidate = null;
+
+  function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+  function price(c) { return c === 0 ? 'Free' : '$' + (c/100).toFixed(2); }
+
+  async function load(search) {
+    try {
+      const res = await fetch('/api/admin/featured' + (search ? '?search=' + encodeURIComponent(search) : ''));
+      if (!res.ok) { frontList.innerHTML = '<p style="color:rgba(251,249,244,0.5)">Admin only.</p>'; return; }
+      const data = await res.json();
+      renderFront(data.featured);
+      renderCandidates(data.candidates);
+    } catch (err) { console.error(err); }
+  }
+
+  function renderFront(featured) {
+    const header = document.querySelector('.sectitle .note');
+    if (header) header.textContent = featured.length + ' works featured · shown on the homepage in this order';
+    frontList.innerHTML = '';
+    if (featured.length === 0) {
+      frontList.innerHTML = '<p style="color:rgba(251,249,244,0.5)">Nothing featured yet. Lift something up below.</p>';
+      return;
+    }
+    for (const f of featured) {
+      const card = document.createElement('div');
+      card.className = 'fcard';
+      card.innerHTML =
+        '<div class="fpos">' + f.position + '</div>' +
+        '<div class="fcov"></div>' +
+        '<div class="info">' +
+          '<div class="ft">' + esc(f.title) + '</div>' +
+          '<div class="fa">' + esc(f.publisher) + '</div>' +
+          '<div class="fnote">' + (f.curator_note ? '"' + esc(f.curator_note) + '"' : '<em style="color:rgba(251,249,244,0.4)">No note yet — add one</em>') + '</div>' +
+        '</div>' +
+        '<div class="fact">' +
+          '<a href="#" data-editnote="' + f.feature_id + '">Edit note</a>' +
+          '<a href="../bookDetail.html?id=' + f.book_id + '">View</a>' +
+          '<a class="pull" href="#" data-unfeature="' + f.feature_id + '">Remove</a>' +
+        '</div>';
+      frontList.appendChild(card);
+    }
+  }
+
+  function renderCandidates(candidates) {
+    candidateList.innerHTML = '';
+    if (candidates.length === 0) {
+      candidateList.innerHTML = '<p style="color:rgba(251,249,244,0.5)">No live works to feature.</p>';
+      return;
+    }
+    for (const c of candidates) {
+      const card = document.createElement('div');
+      card.className = 'ccard';
+      card.innerHTML =
+        '<div class="cov"></div>' +
+        '<div class="ci"><div class="ct">' + esc(c.title) + '</div>' +
+        '<div class="ca">' + esc(c.publisher) + ' · ' + esc(c.content_type) + ' · ' + price(c.price_cents) + '</div></div>' +
+        '<div class="cstat">' + c.readers + ' readers</div>';
+      card.addEventListener('click', () => {
+        candidateList.querySelectorAll('.ccard').forEach(x => x.classList.remove('sel'));
+        card.classList.add('sel');
+        selectedCandidate = c;
+        updateComposer();
+      });
+      candidateList.appendChild(card);
+    }
+  }
+
+  function updateComposer() {
+    const pt = document.querySelector('.picked .pt');
+    const pa = document.querySelector('.picked .pa');
+    if (pt && selectedCandidate) pt.textContent = selectedCandidate.title;
+    if (pa && selectedCandidate) pa.textContent = selectedCandidate.publisher;
+  }
+
+  // Feature button (in the composer).
+  const featureBtn = document.querySelector('.btn-feature');
+  const noteArea = document.querySelector('.composer textarea');
+  if (featureBtn) {
+    featureBtn.addEventListener('click', async () => {
+      if (!selectedCandidate) { alert('Pick a work from the list first.'); return; }
+      const curatorNote = noteArea ? noteArea.value.trim() : '';
+      const r = await fetch('/api/admin/feature', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookId: selectedCandidate.id, curatorNote })
+      });
+      if (r.ok) {
+        if (noteArea) noteArea.value = '';
+        selectedCandidate = null;
+        load(searchInput ? searchInput.value.trim() : '');
+      } else alert('Could not feature it.');
+    });
+  }
+
+  // Front actions (edit note / remove) via delegation.
+  frontList.addEventListener('click', async (e) => {
+    const editId = e.target.getAttribute('data-editnote');
+    const removeId = e.target.getAttribute('data-unfeature');
+    if (editId) {
+      e.preventDefault();
+      const note = prompt('Curator note — why does this deserve the front?');
+      if (note !== null) {
+        await fetch('/api/admin/feature/' + editId + '/note', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ note })
+        });
+        load(searchInput ? searchInput.value.trim() : '');
+      }
+    }
+    if (removeId) {
+      e.preventDefault();
+      if (confirm('Remove this from the front?')) {
+        await fetch('/api/admin/unfeature/' + removeId, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+        });
+        load(searchInput ? searchInput.value.trim() : '');
+      }
+    }
+  });
+
+  // Search candidates.
+  if (searchInput) {
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); load(searchInput.value.trim()); }
+    });
+  }
+
+  load();
+});
+</script>
+</body>
+</html>

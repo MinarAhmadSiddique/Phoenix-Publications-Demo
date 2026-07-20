@@ -1,0 +1,86 @@
+/* ============================================================
+   PHOENIX PUBLICATIONS — tokens.css
+   The ONLY global stylesheet. Brand layer only:
+   palette, type, spacing scale, core identity.
+   Every page links this and styles itself internally using
+   these variables. Change a brand value here -> all pages update.
+   ============================================================ */
+
+/* Brand fonts — editorial serif for voice, humanist sans for UI.
+   Loaded from Google Fonts; swap later if self-hosting. */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* ---- Palette: ink & ember ---------------------------------- */
+  --ink:        #16130F;   /* near-black — primary text, deep fields   */
+  --paper:      #FBF9F4;   /* warm paper — main background              */
+  --ember:      #B5462E;   /* the Phoenix accent — used SPARINGLY,
+                              only on what is chosen / featured / live  */
+  --pine:       #3D5A52;   /* calm secondary — links, quiet actions    */
+  --stone:      #8A8377;   /* muted — captions, metadata, borders      */
+  --paper-2:    #F2EDE3;   /* slightly deeper paper — cards, panels    */
+  --line:       #E4DDD0;   /* hairline dividers                        */
+
+  /* ---- Type ------------------------------------------------- */
+  --font-display: 'Fraunces', Georgia, serif;   /* titles, curator voice */
+  --font-body:    'Inter', system-ui, sans-serif; /* body, UI, metadata  */
+
+  /* Type scale (modular, editorial) */
+  --size-xs:   0.78rem;
+  --size-sm:   0.9rem;
+  --size-base: 1rem;
+  --size-lg:   1.25rem;
+  --size-xl:   1.6rem;
+  --size-2xl:  2.2rem;
+  --size-3xl:  3.2rem;
+  --size-hero: 4.4rem;
+
+  /* ---- Spacing scale ---------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  /* ---- Other identity --------------------------------------- */
+  --radius:     2px;    /* gallery = restrained corners, nearly square */
+  --maxw:       1180px; /* content max width                          */
+  --shadow:     0 1px 3px rgba(22,19,15,0.06), 0 8px 24px rgba(22,19,15,0.04);
+}
+
+/* ---- Minimal global reset so pages start from the same floor ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--size-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+}
+
+a { color: var(--pine); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Accessibility floor: visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
+  .btn:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+  .crumb { padding: var(--space-6) 0 0; font-size: var(--size-sm); color: var(--stone); }
+  .crumb a { color: var(--stone); }
+  .crumb a:hover { color: var(--ember); }
+  .detail { display: grid; grid-template-columns: 320px 1fr; gap: var(--space-16); padding: var(--space-8) 0 var(--space-16); align-items: start; }
+  .buycol { position: sticky; top: 84px; }
+  .cover { width: 100%; aspect-ratio: 3/4.2; border-radius: var(--radius); box-shadow: var(--shadow); background: linear-gradient(150deg, var(--ember), #6e2417); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; margin-bottom: var(--space-6); }
+  .cover .ph { font-family: var(--font-display); color: rgba(251,249,244,0.9); font-size: var(--size-xl); text-align: center; padding: var(--space-6); line-height: 1.25; }
+  .cover .ribbon { position: absolute; top: var(--space-4); left: var(--space-4); background: var(--ember); color: var(--paper); font-size: var(--size-xs); font-weight: 600; padding: 3px var(--space-3); border-radius: var(--radius); letter-spacing: 0.05em; }
+  .buycard { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-6); background: var(--paper); }
+  .buycard .price { font-family: var(--font-display); font-size: var(--size-2xl); font-weight: 600; margin-bottom: var(--space-1); }
+  .buycard .price.free { color: var(--pine); }
+  .buycard .micro { font-size: var(--size-xs); color: var(--stone); margin-bottom: var(--space-5); line-height: 1.5; }
+  .buycard .btn-buy { width: 100%; font-family: var(--font-body); font-size: var(--size-base); font-weight: 500; padding: var(--space-3); border: 1px solid var(--ink); border-radius: var(--radius); background: var(--ink); color: var(--paper); cursor: pointer; transition: background .15s, border-color .15s; }
+  .buycard .btn-buy:hover { background: var(--ember); border-color: var(--ember); }
+  .buycard .btn-sample { display: block; width: 100%; box-sizing: border-box; text-align: center; margin-top: var(--space-3); font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-3); border: 1px solid var(--ink); border-radius: var(--radius); background: transparent; color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
+  .buycard .btn-sample:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .buycard .reassure { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line); font-size: var(--size-xs); color: var(--stone); line-height: 1.6; }
+  .buycard .reassure .row { display: flex; gap: var(--space-2); align-items: baseline; }
+  .buycard .reassure .row .tick { color: var(--pine); }
+  .buycard .sharebox { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line); }
+  .buycard .sharebox .sl { font-size: var(--size-xs); color: var(--stone); margin-bottom: var(--space-3); }
+  .buycard .sharebox .srow { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+  .buycard .sharebox .srow .btn { font-size: var(--size-xs); padding: var(--space-2) var(--space-3); }
+  .info .type-tag { font-size: var(--size-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--stone); font-weight: 600; margin-bottom: var(--space-4); }
+  .info h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; line-height: 1.08; margin-bottom: var(--space-4); }
+  .info .byline { font-size: var(--size-base); color: var(--ink); margin-bottom: var(--space-8); }
+  .info .byline a { color: var(--pine); font-weight: 500; }
+  .placard { border-left: 2px solid var(--ember); padding: var(--space-2) 0 var(--space-2) var(--space-8); margin-bottom: var(--space-12); max-width: 64ch; }
+  .placard .who { font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ember); font-weight: 600; margin-bottom: var(--space-3); }
+  .placard p { font-family: var(--font-display); font-size: var(--size-xl); font-style: italic; line-height: 1.4; margin: 0; color: var(--ink); }
+  .info .section-label { font-size: var(--size-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--stone); font-weight: 600; margin-bottom: var(--space-4); }
+  .info .desc { font-size: var(--size-lg); line-height: 1.65; color: var(--ink); opacity: 0.9; max-width: 68ch; margin-bottom: var(--space-12); }
+  .info .desc p { margin: 0 0 var(--space-4); }
+  .facts { display: flex; flex-wrap: wrap; gap: var(--space-8); padding: var(--space-6) 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: var(--space-12); }
+  .fact .k { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone); margin-bottom: var(--space-1); }
+  .fact .v { font-size: var(--size-base); font-weight: 500; }
+  .engage { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-16); }
+  .like-btn { display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border: 1px solid var(--line); border-radius: 100px; background: var(--paper); color: var(--ink); cursor: pointer; transition: border-color .15s, color .15s; }
+  .like-btn:hover { border-color: var(--ember); color: var(--ember); }
+  .like-btn .heart { color: var(--ember); }
+  .engage .share { font-size: var(--size-sm); color: var(--stone); }
+  .comments { padding: var(--space-16) 0; border-top: 1px solid var(--line); }
+  .comments h2 { font-size: var(--size-2xl); margin-bottom: var(--space-2); }
+  .comments .csub { font-size: var(--size-sm); color: var(--stone); margin-bottom: var(--space-8); }
+  .commentbox { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-6); margin-bottom: var(--space-12); background: var(--paper); }
+  .commentbox textarea { width: 100%; font-family: var(--font-body); font-size: var(--size-base); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); resize: vertical; min-height: 84px; }
+  .commentbox textarea:focus { outline: none; border-color: var(--ember); }
+  .commentbox .crow { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-4); }
+  .commentbox .crow .hint { font-size: var(--size-xs); color: var(--stone); }
+  .comment { display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); padding: var(--space-6) 0; border-top: 1px solid var(--line); }
+  .comment .av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: var(--size-sm); color: var(--paper); flex-shrink: 0; }
+  .comment .cbody .chead { display: flex; align-items: baseline; gap: var(--space-3); margin-bottom: var(--space-2); }
+  .comment .cbody .cname { font-weight: 600; font-size: var(--size-sm); }
+  .comment .cbody .cmeta { font-size: var(--size-xs); color: var(--stone); }
+  .comment .cbody p { margin: 0; font-size: var(--size-base); line-height: 1.6; }
+  .comment .cbody .cactions { margin-top: var(--space-3); display: flex; gap: var(--space-4); font-size: var(--size-xs); }
+  .comment .cbody .cactions a { color: var(--stone); }
+  .comment .cbody .cactions a:hover { color: var(--ember); }
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row .brand { font-size: var(--size-base); }
+  .foot-row a { color: var(--stone); }
+  @media (max-width: 900px) {
+    .detail { grid-template-columns: 1fr; gap: var(--space-12); }
+    .buycol { position: static; }
+    .cover { max-width: 260px; aspect-ratio: 3/4.2; }
+    .info h1 { font-size: var(--size-2xl); }
+  }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+      <a class="hide-sm" href="search.html">Browse</a>
+      <a href="login.html">Log in</a>
+      <a class="btn solid" href="signup.html">Join Phoenix</a>
+    </nav>
+  </div>
+</header>
+ 
+<div class="wrap">
+  <div class="crumb"><a href="index.html">Home</a> &nbsp;/&nbsp; <a href="search.html">Browse</a> &nbsp;/&nbsp; <span class="crumb-title">Book</span></div>
+</div>
+ 
+<div class="wrap">
+  <div class="detail">
+ 
+    <div class="buycol">
+      <div class="cover">
+        <span class="ribbon">Chosen by Phoenix</span>
+        <span class="ph">&hellip;</span>
+      </div>
+      <div class="buycard">
+        <div class="price">&hellip;</div>
+        <div class="micro">One-time purchase &middot; yours to keep and re-download anytime.</div>
+        <button class="btn-buy" type="button">Buy &amp; download</button>
+        <div class="reassure">
+          <div class="row"><span class="tick">&#10003;</span> Secure checkout through Stripe</div>
+          <div class="row"><span class="tick">&#10003;</span> The writer keeps the price minus 4% + processing</div>
+          <div class="row"><span class="tick">&#10003;</span> Instant download &middot; no subscription, ever</div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="info">
+      <div class="type-tag">&hellip;</div>
+      <h1>&hellip;</h1>
+      <div class="byline">by <a href="memberProfile.html">&hellip;</a></div>
+ 
+      <div class="placard">
+        <div class="who">Why we chose it</div>
+        <p>&hellip;</p>
+      </div>
+ 
+      <div class="section-label">About this work</div>
+      <div class="desc">
+        <p>&hellip;</p>
+      </div>
+ 
+      <div class="facts">
+        <div class="fact"><div class="k">Format</div><div class="v">PDF</div></div>
+        <div class="fact"><div class="k">Length</div><div class="v">&mdash;</div></div>
+        <div class="fact"><div class="k">Published</div><div class="v">&mdash;</div></div>
+        <div class="fact"><div class="k">For</div><div class="v">&mdash;</div></div>
+      </div>
+ 
+      <div class="engage">
+        <button class="like-btn" type="button"><span class="heart">&#9829;</span> Like</button>
+        <span class="share">Found it worth sharing? Send it to someone who'd love it.</span>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<section class="comments">
+  <div class="wrap">
+    <h2>What readers say</h2>
+    <div class="csub">One thought per reader &mdash; say the thing that matters. You can edit or remove yours anytime.</div>
+ 
+    <div class="commentbox">
+      <textarea placeholder="Share what this work meant to you&hellip;"></textarea>
+      <div class="crow">
+        <span class="hint">Be kind and honest. Comments are public.</span>
+        <button class="btn solid" type="button">Post comment</button>
+      </div>
+    </div>
+ 
+    <div class="commentlist"></div>
+  </div>
+</section>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div>
+        <a href="search.html">Browse</a> &nbsp;&middot;&nbsp;
+        <a href="legal/terms.html">Terms</a> &nbsp;&middot;&nbsp;
+        <a href="legal/privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
+        <a href="legal/report.html">Report something</a>
+      </div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+ 
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ 
+  // --- Login-aware nav ---
+  try {
+    const meRes = await fetch('/api/me');
+    if (meRes.ok) {
+      const nav = document.querySelector('nav.main');
+      if (nav) {
+        nav.innerHTML =
+        ' <a class="hide-sm" href="index.html">Home</a>'+
+          '<a class="hide-sm" href="members/dashboard.html">Dashboard</a>' +
+          '<a class="hide-sm" href="members/library.html">Library</a>' +
+           '<a class="hide-sm" href="search.html">Browse</a>' +
+           '<a class="btn solid" href="members/publish.html">Publish</a>'
+      }
+    }
+  } catch (e) {}
+ 
+  const params = new URLSearchParams(window.location.search);
+  const bookId = params.get('id');
+ 
+  if (!bookId) {
+    document.querySelector('.info h1').textContent = 'No book specified';
+    return;
+  }
+ 
+  function priceLabel(cents) {
+    return cents === 0 ? 'Free' : '$' + (cents / 100).toFixed(2);
+  }
+  function esc(s){ return (s||'').replace(/</g,'&lt;'); }
+ 
+  try {
+    const res = await fetch('/api/book/' + bookId);
+    if (!res.ok) {
+      document.querySelector('.info h1').textContent = 'Book not found';
+      document.querySelector('.info .desc').innerHTML = "<p>This work may have been removed, or isn't available.</p>";
+      return;
+    }
+    const book = await res.json();
+ 
+    document.title = book.title + ' \u00b7 Phoenix Publications';
+ 
+    // Cover
+    const coverEl = document.querySelector('.cover');
+    if (coverEl) {
+      if (book.cover_key && book.cover_key !== 'none' && book.cover_key !== 'pending') {
+        coverEl.innerHTML = '<img src="/' + book.cover_key + '" alt="' + esc(book.title) + '" style="width:100%;height:100%;object-fit:cover;display:block">';
+      } else {
+        coverEl.innerHTML = '<span class="ph">' + esc(book.title) + '</span>';
+      }
+    }
+ 
+    const crumbTitle = document.querySelector('.crumb-title');
+    if (crumbTitle) crumbTitle.textContent = book.title;
+ 
+    document.querySelector('.type-tag').textContent =
+      book.content_type + (book.category ? ' \u00b7 ' + book.category : '');
+ 
+    document.querySelector('.info h1').textContent = book.title;
+    document.querySelector('.byline').innerHTML =
+      'by <a href="memberProfile.html?handle=' + book.handle + '">' + esc(book.publisher) + '</a>';
+ 
+    document.querySelector('.info .desc').innerHTML =
+      '<p>' + esc(book.description || 'No description provided.') + '</p>';
+ 
+    const priceEl = document.querySelector('.buycard .price');
+    priceEl.textContent = priceLabel(book.price_cents);
+    if (book.price_cents === 0) priceEl.classList.add('free');
+ 
+    // Facts
+    document.querySelectorAll('.facts .fact').forEach(fact => {
+      const label = fact.querySelector('.k').textContent.trim().toLowerCase();
+      const valueEl = fact.querySelector('.v');
+      if (label === 'for') {
+        valueEl.textContent = book.audience || 'Everyone';
+      } else if (label === 'published') {
+        const d = new Date(book.created_at.replace(' ', 'T'));
+        valueEl.textContent = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      } else if (label === 'length') {
+        fact.style.display = 'none';
+      } else if (label === 'format') {
+        valueEl.textContent = 'PDF';
+      }
+    });
+ 
+    // Curator placard + ribbon (hidden unless featured)
+    const placard = document.querySelector('.placard');
+    if (placard) placard.style.display = 'none';
+    const ribbon = document.querySelector('.cover .ribbon');
+    if (ribbon) ribbon.style.display = 'none';
+ 
+    // LIKE
+    const likeBtn = document.querySelector('.like-btn');
+    if (likeBtn) {
+      function renderLike(liked, count) {
+        likeBtn.innerHTML = '<span class="heart">' + (liked ? '\u2665' : '\u2661') + '</span> ' +
+                            (liked ? 'Liked' : 'Like') + ' \u00b7 ' + count;
+      }
+      renderLike(book.likedByMe, book.likes);
+      likeBtn.addEventListener('click', async () => {
+        const r = await fetch('/api/book/' + bookId + '/like', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+        });
+        if (r.status === 401) { window.location.href = '/login.html'; return; }
+        if (r.ok) { const result = await r.json(); renderLike(result.liked, result.likes); }
+      });
+    }
+ 
+    // --- BUY / GET FREE ---
+    const buyBtn = document.querySelector('.btn-buy');
+    if (buyBtn) {
+      if (book.price_cents === 0) {
+        buyBtn.textContent = 'Get it free';
+        buyBtn.addEventListener('click', async () => {
+          buyBtn.textContent = 'Adding\u2026'; buyBtn.disabled = true;
+          try {
+            const r = await fetch('/api/book/' + bookId + '/get-free', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+            });
+            if (r.status === 401) { window.location.href = '/login.html'; return; }
+            if (r.ok) { window.location.href = '/members/library.html?purchased=' + bookId; }
+            else {
+              const e = await r.json();
+              alert(e.error || 'Could not add.');
+              buyBtn.textContent = 'Get it free'; buyBtn.disabled = false;
+            }
+          } catch (err) { buyBtn.textContent = 'Get it free'; buyBtn.disabled = false; }
+        });
+      } else {
+        buyBtn.textContent = 'Buy & download';
+        buyBtn.addEventListener('click', async () => {
+          buyBtn.textContent = 'Starting checkout\u2026'; buyBtn.disabled = true;
+          try {
+            const r = await fetch('/checkout/' + bookId, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+            });
+            if (r.status === 401) { window.location.href = '/login.html'; return; }
+            const data = await r.json();
+            if (data.url) { window.location.href = data.url; }
+            else {
+              alert(data.error || 'Could not start checkout.');
+              buyBtn.textContent = 'Buy & download'; buyBtn.disabled = false;
+            }
+          } catch (err) { buyBtn.textContent = 'Buy & download'; buyBtn.disabled = false; }
+        });
+      }
+    }
+ 
+    // --- READ A SAMPLE (preview — PDF books only) ---
+    try {
+      const pv = await fetch('/api/book/' + bookId + '/has-preview');
+      const { canPreview } = await pv.json();
+      if (canPreview && buyBtn) {
+        const sample = document.createElement('a');
+        sample.href = '/preview/' + bookId;
+        sample.target = '_blank';
+        sample.rel = 'noopener';
+        sample.className = 'btn-sample';
+        sample.textContent = 'Read a sample';
+        buyBtn.insertAdjacentElement('afterend', sample);
+      }
+    } catch (e) {}
+ 
+    // --- SHARE this work ---
+    const buycard = document.querySelector('.buycard');
+    if (buycard) {
+      const bookUrl = window.location.origin + '/bookDetail.html?id=' + bookId;
+      const shareText = encodeURIComponent('Read "' + book.title + '" on Phoenix Publications');
+      const encUrl = encodeURIComponent(bookUrl);
+      const box = document.createElement('div');
+      box.className = 'sharebox';
+      box.innerHTML =
+        '<div class="sl">Share this work</div>' +
+        '<div class="srow">' +
+          '<button class="btn" type="button" id="copyBookLink">Copy link</button>' +
+          '<a class="btn" href="https://twitter.com/intent/tweet?text=' + shareText + '&url=' + encUrl + '" target="_blank" rel="noopener">X</a>' +
+          '<a class="btn" href="https://www.facebook.com/sharer/sharer.php?u=' + encUrl + '" target="_blank" rel="noopener">Facebook</a>' +
+          '<a class="btn" href="https://wa.me/?text=' + shareText + '%20' + encUrl + '" target="_blank" rel="noopener">WhatsApp</a>' +
+        '</div>';
+      buycard.appendChild(box);
+      const copyBtn = document.getElementById('copyBookLink');
+      if (copyBtn) copyBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(bookUrl); } catch (e) {}
+        copyBtn.textContent = 'Copied \u2713';
+        setTimeout(() => copyBtn.textContent = 'Copy link', 1500);
+      });
+    }
+ 
+    // ===== COMMENTS =====
+    const commentList = document.querySelector('.commentlist');
+    const postBtn = document.querySelector('.commentbox .btn.solid');
+    const textarea = document.querySelector('.commentbox textarea');
+ 
+    function timeAgo(dateStr) {
+      const d = new Date(dateStr.replace(' ', 'T') + 'Z');
+      const seconds = Math.floor((Date.now() - d) / 1000);
+      if (seconds < 60) return 'just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+      const days = Math.floor(hours / 24);
+      if (days === 1) return 'yesterday';
+      if (days < 30) return days + ' days ago';
+      return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    }
+    function initials(name) {
+      return (name||'?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+ 
+    async function loadComments() {
+      const r = await fetch('/api/book/' + bookId + '/comments');
+      const data = await r.json();
+      commentList.innerHTML = '';
+      if (data.comments.length === 0) {
+        commentList.innerHTML = '<p style="color:var(--stone);font-size:var(--size-sm)">No comments yet. Be the first.</p>';
+      }
+      for (const c of data.comments) {
+        const mine = c.member_id === data.me;
+        const div = document.createElement('div');
+        div.className = 'comment';
+        div.innerHTML =
+          '<div class="av">' + initials(c.author) + '</div>' +
+          '<div class="cbody">' +
+            '<div class="chead"><span class="cname">' + esc(c.author) + '</span>' +
+            '<span class="cmeta">@' + esc(c.handle) + ' &middot; ' + timeAgo(c.created_at) +
+            (c.edited_at ? ' &middot; edited' : '') + '</span></div>' +
+            '<p>' + esc(c.body) + '</p>' +
+            '<div class="cactions">' +
+              (mine ? '<a href="#" data-delete="1">Remove</a>' : '<a href="legal/report.html">Report</a>') +
+            '</div>' +
+          '</div>';
+        commentList.appendChild(div);
+      }
+    }
+ 
+    if (postBtn) {
+      postBtn.addEventListener('click', async () => {
+        const body = textarea.value.trim();
+        if (!body) return;
+        const r = await fetch('/api/book/' + bookId + '/comments', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body })
+        });
+        if (r.status === 401) { window.location.href = '/login.html'; return; }
+        if (r.ok) { textarea.value = ''; loadComments(); }
+        else { alert('Could not post your comment.'); }
+      });
+    }
+ 
+    commentList.addEventListener('click', async (e) => {
+      if (!e.target.getAttribute('data-delete')) return;
+      e.preventDefault();
+      if (!confirm('Remove your comment?')) return;
+      const r = await fetch('/api/book/' + bookId + '/comments/delete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+      });
+      if (r.ok) loadComments();
+    });
+ 
+    loadComments();
+ 
+  } catch (err) {
+    console.error('Could not load book:', err);
+  }
+});
+</script>
+</body>
+</html>

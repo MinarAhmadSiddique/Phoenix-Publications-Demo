@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin &middot; Phoenix Publications</title>
+<!-- lives in /admin/ — paths use ../ -->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* ============================================================
+     ADMIN LOGIN (admin/adminLogin.html)
+     The walled-off control-room gate. DELIBERATELY different from
+     the public/member login: dark, utilitarian, "secure terminal"
+     not "warm gallery" — so the admin always knows where they are.
+     No public nav, no signup, no marketing. Just the gate.
+ 
+     Backend (later): checks (1) valid credentials AND (2)
+     is_admin = 1, THEN (3) 2FA code. Design only here — no JS.
+     ============================================================ */
+ 
+  body {
+    min-height: 100vh; margin: 0; display: flex; flex-direction: column;
+    background: var(--ink); color: var(--paper);
+    font-family: var(--font-body);
+  }
+ 
+  /* slim, plain admin bar — no public links */
+  .abar { border-bottom: 1px solid rgba(251,249,244,0.12); padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; }
+  .abar .b { font-family: var(--font-display); font-weight: 600; font-size: var(--size-base); color: var(--paper); display: flex; align-items: baseline; gap: var(--space-2); }
+  .abar .b .mark { color: var(--ember); }
+  .abar .tag { font-size: var(--size-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--ember); font-weight: 600; }
+ 
+  /* centered gate */
+  .gate { flex: 1; display: flex; align-items: center; justify-content: center; padding: var(--space-12) var(--space-6); }
+  .card {
+    width: 100%; max-width: 400px;
+    background: #1f1b16; border: 1px solid rgba(251,249,244,0.12);
+    border-radius: var(--radius); padding: var(--space-12) var(--space-8);
+  }
+  .card .lock { font-size: var(--size-xl); color: var(--ember); margin-bottom: var(--space-6); }
+  .card h1 { font-family: var(--font-display); font-size: var(--size-xl); color: var(--paper); margin-bottom: var(--space-2); }
+  .card .sub { font-size: var(--size-sm); color: rgba(251,249,244,0.55); margin-bottom: var(--space-8); line-height: 1.5; }
+ 
+  .field { margin-bottom: var(--space-6); }
+  .field label { display: block; font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: rgba(251,249,244,0.6); margin-bottom: var(--space-2); }
+  .field input {
+    width: 100%; font-family: var(--font-body); font-size: var(--size-base);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid rgba(251,249,244,0.18); border-radius: var(--radius);
+    background: #16130f; color: var(--paper); transition: border-color .15s;
+  }
+  .field input::placeholder { color: rgba(251,249,244,0.3); }
+  .field input:focus { outline: none; border-color: var(--ember); }
+ 
+  /* 2FA code — spaced, monospace feel */
+  .field.code input { letter-spacing: 0.4em; font-size: var(--size-lg); text-align: center; font-family: var(--font-display); }
+  .field .codehint { font-size: var(--size-xs); color: rgba(251,249,244,0.4); margin-top: var(--space-2); }
+ 
+  .btn-enter {
+    width: 100%; font-family: var(--font-body); font-size: var(--size-base); font-weight: 500;
+    padding: var(--space-3) var(--space-4); margin-top: var(--space-2);
+    border: 1px solid var(--ember); border-radius: var(--radius);
+    background: var(--ember); color: var(--paper); cursor: pointer; transition: opacity .15s;
+  }
+  .btn-enter:hover { opacity: 0.9; }
+ 
+  .card .foot { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid rgba(251,249,244,0.1); font-size: var(--size-xs); color: rgba(251,249,244,0.4); line-height: 1.6; }
+  .card .foot a { color: rgba(251,249,244,0.6); }
+ 
+  /* security warning strip */
+  .warn { font-size: var(--size-xs); color: rgba(251,249,244,0.4); text-align: center; padding: var(--space-6); border-top: 1px solid rgba(251,249,244,0.08); }
+</style>
+</head>
+<body>
+ 
+<!-- ADMIN BAR — no public links, just identity -->
+<div class="abar">
+  <div class="b"><span class="mark">&#10022;</span> Phoenix Publications</div>
+  <div class="tag">Admin</div>
+</div>
+ 
+<!-- THE GATE -->
+<div class="gate">
+  <div class="card">
+    <div class="lock">&#128274;</div>
+    <h1>Control room</h1>
+    <div class="sub">Restricted access. This area is for Phoenix administrators only.</div>
+ 
+    <!-- Stage A: submits email + password to /admin/login. The 2FA code field
+         stays here but is not enforced yet (activated in a later stage). -->
+    <form action="/admin/login" method="POST">
+    <div class="field">
+      <label for="email">Admin email</label>
+      <input type="email" id="email" name="email" placeholder="you@phoenixpublications.com" autocomplete="username" required>
+    </div>
+ 
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password" required>
+    </div>
+ 
+    <div class="field code">
+      <label for="code">Authentication code</label>
+      <input type="text" id="code" name="code" placeholder="000000" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+      <div class="codehint">The 6-digit code from your authenticator app.</div>
+    </div>
+ 
+    <button class="btn-enter" type="submit">Enter control room</button>
+    </form>
+ 
+    <div class="foot">
+      Trouble signing in? Admin access can only be recovered through your backup codes or by direct database access &mdash; never through this page.
+    </div>
+  </div>
+</div>
+ 
+<div class="warn">
+  All access to this area is logged. Unauthorized access attempts are recorded.
+</div>
+ 
+</body>
+</html>

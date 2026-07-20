@@ -1,0 +1,511 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  /* ============================================================
+     SEARCH / BROWSE — discovery page. Internal CSS, brand vars.
+     Discovery with taste: featured results ride on top, filters
+     stay quiet (not a wall of 40 checkboxes). Design only, no JS.
+     DATA: sample results. Backend queries books JOIN members
+     JOIN content_types/categories, filtered by the controls,
+     ordered featured-first then by the chosen sort.
+     ============================================================ */
+ 
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+ 
+  /* ---- top bar (shared) ---- */
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
+  .btn:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+ 
+  /* ---- search header ---- */
+  .searchhead { padding: var(--space-16) 0 var(--space-8); border-bottom: 1px solid var(--line); }
+  .searchhead h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-2); }
+  .searchhead .sub { font-size: var(--size-base); color: var(--stone); margin-bottom: var(--space-8); }
+  .searchbar { display: flex; gap: var(--space-3); max-width: 640px; }
+  .searchbar input { flex: 1; font-family: var(--font-body); font-size: var(--size-base); padding: var(--space-4) var(--space-6); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); transition: border-color .15s; }
+  .searchbar input:focus { outline: none; border-color: var(--ember); }
+  .searchbar button { padding: var(--space-4) var(--space-8); }
+ 
+  /* type tabs — the 4 content types as primary filter */
+  .typetabs { display: flex; gap: var(--space-2); margin-top: var(--space-8); flex-wrap: wrap; }
+  .typetab { font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-5); border-radius: 100px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; transition: all .15s; }
+  .typetab:hover { border-color: var(--ember); text-decoration: none; color: var(--ember); }
+  .typetab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+ 
+  /* ---- body: filters sidebar + results ---- */
+  .body { display: grid; grid-template-columns: 230px 1fr; gap: var(--space-12); padding: var(--space-12) 0 var(--space-16); align-items: start; }
+ 
+  /* sidebar */
+  .filters { position: sticky; top: 84px; }
+  .fgroup { margin-bottom: var(--space-8); }
+  .fgroup .ftitle { font-size: var(--size-xs); letter-spacing: 0.12em; text-transform: uppercase; color: var(--stone); font-weight: 600; margin-bottom: var(--space-4); }
+  .fgroup label { display: flex; align-items: center; gap: var(--space-3); font-size: var(--size-sm); color: var(--ink); padding: var(--space-1) 0; cursor: pointer; }
+  .fgroup input[type=checkbox] { accent-color: var(--ember); width: 15px; height: 15px; }
+  .fgroup .more { font-size: var(--size-xs); color: var(--pine); margin-top: var(--space-2); display: inline-block; }
+  .filters .clear { font-size: var(--size-xs); color: var(--stone); text-decoration: underline; }
+ 
+  /* results */
+  .results .rhead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-8); gap: var(--space-4); flex-wrap: wrap; }
+  .results .rcount { font-size: var(--size-sm); color: var(--stone); }
+  .results .sort { font-size: var(--size-sm); color: var(--ink); }
+  .results .sort select { font-family: var(--font-body); font-size: var(--size-sm); padding: var(--space-1) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); cursor: pointer; }
+ 
+  /* featured-first banner inside results */
+  .featband { font-size: var(--size-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ember); font-weight: 600; margin-bottom: var(--space-6); display: flex; align-items: center; gap: var(--space-3); }
+  .featband::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+ 
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-8) var(--space-6); }
+  .card { display: flex; flex-direction: column; }
+  .card .cover { width: 100%; aspect-ratio: 3/4; border-radius: var(--radius); box-shadow: var(--shadow); background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; margin-bottom: var(--space-3); transition: transform .15s; }
+  .card:hover .cover { transform: translateY(-3px); }
+  .card .cover .ph { font-family: var(--font-display); color: rgba(251,249,244,0.85); font-size: var(--size-sm); text-align: center; padding: var(--space-3); line-height: 1.25; }
+  .card .cover .ribbon { position: absolute; top: var(--space-2); left: var(--space-2); background: var(--ember); color: var(--paper); font-size: 0.66rem; font-weight: 600; padding: 2px var(--space-2); border-radius: var(--radius); letter-spacing: 0.04em; }
+  .card .wtype { font-size: var(--size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone); font-weight: 600; margin-bottom: var(--space-1); }
+  .card .wtitle { font-family: var(--font-display); font-size: var(--size-base); font-weight: 600; line-height: 1.2; margin-bottom: var(--space-1); }
+  .card a.wtitle:hover { color: var(--ember); text-decoration: none; }
+  .card .wauthor { font-size: var(--size-xs); color: var(--stone); margin-bottom: var(--space-2); }
+  .card .wfoot { display: flex; align-items: center; gap: var(--space-3); margin-top: auto; }
+  .card .price { font-weight: 600; font-size: var(--size-sm); }
+  .card .price.free { color: var(--pine); }
+  .card .likes { font-size: var(--size-xs); color: var(--stone); }
+ 
+  /* color variety for sample covers */
+  .card:nth-child(3n+1) .cover { background: linear-gradient(150deg, var(--pine), var(--ink)); }
+  .card:nth-child(3n+2) .cover { background: linear-gradient(150deg, var(--ember), #6e2417); }
+  .card:nth-child(3n+3) .cover { background: linear-gradient(150deg, #4a4036, var(--ink)); }
+ 
+  .gap { height: var(--space-12); }
+ 
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row .brand { font-size: var(--size-base); }
+  .foot-row a { color: var(--stone); }
+ 
+  @media (max-width: 880px) {
+    .body { grid-template-columns: 1fr; gap: var(--space-8); }
+    .filters { position: static; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-6); padding-bottom: var(--space-6); border-bottom: 1px solid var(--line); }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .searchhead h1 { font-size: var(--size-2xl); }
+  }
+  @media (max-width: 460px) {
+    .grid { grid-template-columns: 1fr 1fr; gap: var(--space-6) var(--space-4); }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ===== TOP BAR ===== -->
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+      <a class="hide-sm" href="search.html">Browse</a>
+      <a href="login.html">Log in</a>
+      <a class="btn solid" href="signup.html">Join Phoenix</a>
+    </nav>
+  </div>
+</header>
+ 
+<!-- ===== SEARCH HEADER ===== -->
+<section class="searchhead">
+  <div class="wrap">
+    <h1>Find your next read</h1>
+    <div class="sub">Books, journals, research, and short reads &mdash; chosen work surfaces first.</div>
+    <div class="searchbar">
+      <input type="search" placeholder="Search by title, author, or subject&hellip;" aria-label="Search">
+      <button class="btn solid" type="button">Search</button>
+    </div>
+    <!-- the 4 content types as primary tabs -->
+    <div class="typetabs">
+      <a class="typetab active" href="search.html">All</a>
+      <a class="typetab" href="search.html">Books</a>
+      <a class="typetab" href="search.html">Journals &amp; Magazines</a>
+      <a class="typetab" href="search.html">Research &amp; Academic</a>
+      <a class="typetab" href="search.html">Short Reads</a>
+    </div>
+  </div>
+</section>
+ 
+<!-- ===== BODY ===== -->
+<div class="wrap">
+  <div class="body">
+ 
+    <!-- FILTERS SIDEBAR -->
+    <aside class="filters">
+      <div class="fgroup">
+        <div class="ftitle">Category</div>
+        <label><input type="checkbox"> Fiction</label>
+        <label><input type="checkbox"> Science Fiction</label>
+        <label><input type="checkbox"> Technology</label>
+        <label><input type="checkbox"> Business</label>
+        <label><input type="checkbox"> Poetry</label>
+        <label><input type="checkbox"> Self-Help</label>
+        <a class="more" href="#">+ all 40 categories</a>
+      </div>
+ 
+      <div class="fgroup">
+        <div class="ftitle">For</div>
+        <label><input type="checkbox"> Children</label>
+        <label><input type="checkbox"> Teens</label>
+        <label><input type="checkbox"> Young Adults</label>
+        <label><input type="checkbox"> Adults</label>
+        <label><input type="checkbox"> Professionals</label>
+        <label><input type="checkbox"> Educators</label>
+        <label><input type="checkbox"> Researchers</label>
+      </div>
+ 
+      <div class="fgroup">
+        <div class="ftitle">Price</div>
+        <label><input type="checkbox"> Free</label>
+        <label><input type="checkbox"> Under $5</label>
+        <label><input type="checkbox"> $5 &ndash; $10</label>
+        <label><input type="checkbox"> $10+</label>
+      </div>
+ 
+      <a class="clear" href="search.html">Clear all filters</a>
+    </aside>
+ 
+    <!-- RESULTS -->
+    <main class="results">
+      <div class="rhead">
+        <div class="rcount">Showing 11 works</div>
+        <div class="sort">Sort:
+          <select aria-label="Sort results">
+            <option>Chosen first</option>
+            <option>Newest</option>
+            <option>Most liked</option>
+            <option>Price: low to high</option>
+            <option>Price: high to low</option>
+          </select>
+        </div>
+      </div>
+ 
+      <!-- featured-first: chosen work rides on top -->
+      <div class="featband">Chosen by Phoenix</div>
+      <div class="grid">
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ribbon">Featured</span><span class="ph">The Salt<br>in the Letter</span></a>
+          <div class="wtype">Literary Fiction</div>
+          <a href="bookDetail.html" class="wtitle">The Salt in the Letter</a>
+          <div class="wauthor">Ayanna Okeb-Hart</div>
+          <div class="wfoot"><span class="price">$6.00</span><span class="likes">&#9829; 204</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ribbon">Featured</span><span class="ph">Small Systems,<br>Big Patience</span></a>
+          <div class="wtype">Technology &middot; Essays</div>
+          <a href="bookDetail.html" class="wtitle">Small Systems, Big Patience</a>
+          <div class="wauthor">Devraj Menon</div>
+          <div class="wfoot"><span class="price">$4.50</span><span class="likes">&#9829; 86</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ribbon">Featured</span><span class="ph">Field Notes<br>from the<br>Night Shift</span></a>
+          <div class="wtype">Memoir &middot; Short Reads</div>
+          <a href="bookDetail.html" class="wtitle">Field Notes from the Night Shift</a>
+          <div class="wauthor">Carmen Ruiz-Adler</div>
+          <div class="wfoot"><span class="price free">Free</span><span class="likes">&#9829; 153</span></div>
+        </article>
+      </div>
+ 
+      <div class="gap"></div>
+ 
+      <!-- everything else -->
+      <div class="featband">Everything else</div>
+      <div class="grid">
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">The Quiet<br>Deploy</span></a>
+          <div class="wtype">Technology &middot; Guide</div>
+          <a href="bookDetail.html" class="wtitle">The Quiet Deploy</a>
+          <div class="wauthor">Devraj Menon</div>
+          <div class="wfoot"><span class="price">$3.00</span><span class="likes">&#9829; 34</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">Tidewrack</span></a>
+          <div class="wtype">Poetry</div>
+          <a href="bookDetail.html" class="wtitle">Tidewrack</a>
+          <div class="wauthor">Lena Fairburn</div>
+          <div class="wfoot"><span class="price">$2.50</span><span class="likes">&#9829; 19</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">A Short History<br>of Almost<br>Quitting</span></a>
+          <div class="wtype">Biography &middot; Memoir</div>
+          <a href="bookDetail.html" class="wtitle">A Short History of Almost Quitting</a>
+          <div class="wauthor">Marcus Bell</div>
+          <div class="wfoot"><span class="price">$5.00</span><span class="likes">&#9829; 67</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">Grid &amp;<br>Grace</span></a>
+          <div class="wtype">Research &middot; Engineering</div>
+          <a href="bookDetail.html" class="wtitle">Grid &amp; Grace</a>
+          <div class="wauthor">Priya Nandakumar</div>
+          <div class="wfoot"><span class="price">$8.00</span><span class="likes">&#9829; 12</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">The Founder's<br>Quiet Year</span></a>
+          <div class="wtype">Business</div>
+          <a href="bookDetail.html" class="wtitle">The Founder's Quiet Year</a>
+          <div class="wauthor">Sam Oduya</div>
+          <div class="wfoot"><span class="price">$7.00</span><span class="likes">&#9829; 41</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">Saltwater<br>Recipes</span></a>
+          <div class="wtype">Cooking</div>
+          <a href="bookDetail.html" class="wtitle">Saltwater Recipes</a>
+          <div class="wauthor">Joana Pires</div>
+          <div class="wfoot"><span class="price free">Free</span><span class="likes">&#9829; 88</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">Borrowed<br>Light</span></a>
+          <div class="wtype">Fiction</div>
+          <a href="bookDetail.html" class="wtitle">Borrowed Light</a>
+          <div class="wauthor">Idris Khan</div>
+          <div class="wfoot"><span class="price">$4.00</span><span class="likes">&#9829; 28</span></div>
+        </article>
+        <article class="card">
+          <a href="bookDetail.html" class="cover"><span class="ph">Teaching<br>the Edge</span></a>
+          <div class="wtype">Education</div>
+          <a href="bookDetail.html" class="wtitle">Teaching the Edge</a>
+          <div class="wauthor">Helen Mwangi</div>
+          <div class="wfoot"><span class="price">$6.50</span><span class="likes">&#9829; 9</span></div>
+        </article>
+      </div>
+    </main>
+ 
+  </div>
+</div>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div>
+        <a href="search.html">Browse</a> &nbsp;&middot;&nbsp;
+        <a href="legal/terms.html">Terms</a> &nbsp;&middot;&nbsp;
+        <a href="legal/privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
+        <a href="legal/report.html">Report something</a>
+      </div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  // --- Login-aware nav: show member nav if logged in ---
+ try {
+  const meRes = await fetch('/api/me');
+  if (meRes.ok) {
+    const me = await meRes.json();   // capture the data
+
+    // Build the avatar: real photo if they have one, else initials.
+    let avatarInner;
+    if (me.avatar_key && me.avatar_key !== 'none') {
+      avatarInner = '<img src="/' + me.avatar_key + '" alt="You" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">';
+    } else {
+      avatarInner = (me.display_name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    const nav = document.querySelector('nav.main');
+    if (nav) {
+      nav.innerHTML =
+        ' <a class="hide-sm" href="index.html">Home</a>'+
+        '<a class="hide-sm" href="members/dashboard.html">Dashboard</a>' +
+        '<a class="hide-sm" href="members/library.html">Library</a>' +
+        '<a class="hide-sm" href="search.html">Browse</a>' +
+        ' <a class="hide-sm" href="reviews.html">Reviews</a>'+
+        '<a class="btn solid" href="members/publish.html">Publish</a>' +
+        '<a href="members/editProfile.html" title="Settings" style="display:inline-flex;align-items:center"><span style="width:32px;height:32px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(150deg,var(--pine),var(--ink));color:var(--paper);font-family:var(--font-display);font-size:var(--size-xs);flex-shrink:0">' + avatarInner + '</span></a>'
+        
+    }
+  }
+} catch (e) {}
+
+  const resultsMain = document.querySelector('.results');
+  const rcount = document.querySelector('.rcount');
+  const searchInput = document.querySelector('.searchbar input');
+  const searchBtn = document.querySelector('.searchbar .btn');
+  const typeTabs = document.querySelectorAll('.typetab');
+  const sortSelect = document.querySelector('.sort select');
+
+  const state = { q: '', type: null, category: null, audience: null, price: null, sort: 'newest' };
+
+  const TYPE_IDS = { 'All': null, 'Books': 1, 'Journals & Magazines': 2, 'Research & Academic': 3, 'Short Reads': 4 };
+  const SORT_KEYS = { 'Chosen first': 'newest', 'Newest': 'newest', 'Most liked': 'likes', 'Price: low to high': 'price_low', 'Price: high to low': 'price_high' };
+  const PRICE_BANDS = { 'Free': 'free', 'Under $5': 'under5', '$5 – $10': '5to10', '$10+': 'over10' };
+
+  // Fetch the real taxonomy once (types, categories, audiences).
+  let taxonomy = { contentTypes: [], categories: [], audiences: [] };
+  try {
+    const t = await fetch('/api/taxonomy');
+    taxonomy = await t.json();
+  } catch (e) { console.error('taxonomy load failed', e); }
+
+  function priceCard(cents) {
+    return cents === 0 ? '<span class="price free">Free</span>' : '<span class="price">$' + (cents/100).toFixed(2) + '</span>';
+  }
+  function esc(s) { return (s || '').replace(/</g, '&lt;'); }
+  function coverHtml(b) {
+  if (b.cover_key && b.cover_key !== 'none' && b.cover_key !== 'pending') {
+    return '<img src="/' + b.cover_key + '" alt="' + esc(b.title) + '" style="width:100%;height:100%;object-fit:cover;display:block">';
+  }
+  return '<span class="ph">' + esc(b.title) + '</span>';
+}
+  function buildCard(b) {
+    const typeLine = b.content_type + (b.category ? ' &middot; ' + b.category : '');
+    return '<article class="card">' +
+     '<a href="bookDetail.html?id=' + b.id + '" class="cover">' + coverHtml(b) + '</a>' +
+      '<div class="wtype">' + esc(typeLine) + '</div>' +
+      '<a href="bookDetail.html?id=' + b.id + '" class="wtitle">' + esc(b.title) + '</a>' +
+      '<div class="wauthor">' + esc(b.publisher) + '</div>' +
+      '<div class="wfoot">' + priceCard(b.price_cents) + '<span class="likes">&#9829; ' + b.likes + '</span></div>' +
+      '</article>';
+  }
+
+  async function runSearch() {
+    const qs = new URLSearchParams();
+    if (state.q) qs.set('q', state.q);
+    if (state.type) qs.set('type', state.type);
+    if (state.category) qs.set('category', state.category);
+    if (state.audience) qs.set('audience', state.audience);
+    if (state.price) qs.set('price', state.price);
+    if (state.sort) qs.set('sort', state.sort);
+    try {
+      const res = await fetch('/api/search?' + qs.toString());
+      const books = await res.json();
+      resultsMain.querySelectorAll('.featband, .grid, .gap').forEach(el => el.remove());
+      if (rcount) rcount.textContent = 'Showing ' + books.length + (books.length === 1 ? ' work' : ' works');
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      grid.innerHTML = books.length === 0 ? '<p style="color:var(--stone)">No works match your search.</p>' : books.map(buildCard).join('');
+      resultsMain.appendChild(grid);
+    } catch (err) { console.error('Search failed:', err); }
+  }
+
+  // Build the "For" (audience) checkboxes from real data.
+  const filterGroups = document.querySelectorAll('.filters .fgroup');
+  let categoryGroup = null, audienceGroup = null;
+  filterGroups.forEach(g => {
+    const title = g.querySelector('.ftitle');
+    if (!title) return;
+    if (title.textContent.trim() === 'For') audienceGroup = g;
+    if (title.textContent.trim() === 'Category') categoryGroup = g;
+  });
+
+  if (audienceGroup) {
+    // Remove sample labels, keep the title.
+    audienceGroup.querySelectorAll('label, .more').forEach(el => el.remove());
+    taxonomy.audiences.forEach(a => {
+      const label = document.createElement('label');
+      label.innerHTML = '<input type="checkbox" data-aud="' + a.id + '"> ' + esc(a.name);
+      audienceGroup.appendChild(label);
+    });
+    audienceGroup.addEventListener('change', e => {
+      if (!e.target.dataset.aud) return;
+      const boxes = audienceGroup.querySelectorAll('input');
+      if (e.target.checked) boxes.forEach(b => { if (b !== e.target) b.checked = false; });
+      state.audience = e.target.checked ? Number(e.target.dataset.aud) : null;
+      runSearch();
+    });
+  }
+
+  // Rebuild the Category checkboxes for the SELECTED type (hidden when All).
+  function renderCategories() {
+    if (!categoryGroup) return;
+    categoryGroup.querySelectorAll('label, .more, .catnote').forEach(el => el.remove());
+    state.category = null;  // reset when type changes
+    if (!state.type) {
+      // "All" selected — no categories shown.
+      const note = document.createElement('div');
+      note.className = 'catnote';
+      note.style.cssText = 'font-size:var(--size-xs);color:var(--stone)';
+      note.textContent = 'Pick a type above to filter by category.';
+      categoryGroup.appendChild(note);
+      categoryGroup.style.display = '';
+      return;
+    }
+    const cats = taxonomy.categories.filter(c => c.content_type_id === state.type);
+    cats.forEach(c => {
+      const label = document.createElement('label');
+      label.innerHTML = '<input type="checkbox" data-cat="' + c.id + '"> ' + esc(c.name);
+      categoryGroup.appendChild(label);
+    });
+  }
+  if (categoryGroup) {
+    categoryGroup.addEventListener('change', e => {
+      if (!e.target.dataset.cat) return;
+      const boxes = categoryGroup.querySelectorAll('input');
+      if (e.target.checked) boxes.forEach(b => { if (b !== e.target) b.checked = false; });
+      state.category = e.target.checked ? Number(e.target.dataset.cat) : null;
+      runSearch();
+    });
+  }
+
+  // Search box
+  function doSearch() { state.q = searchInput.value.trim(); runSearch(); }
+  if (searchBtn) searchBtn.addEventListener('click', doSearch);
+  if (searchInput) searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+  // Type tabs — also rebuild category list for the chosen type
+  typeTabs.forEach(tab => {
+    tab.addEventListener('click', e => {
+      e.preventDefault();
+      typeTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.type = TYPE_IDS[tab.textContent.trim()] ?? null;
+      renderCategories();
+      runSearch();
+    });
+  });
+
+  // Sort
+  if (sortSelect) sortSelect.addEventListener('change', () => {
+    state.sort = SORT_KEYS[sortSelect.value.trim()] || 'newest';
+    runSearch();
+  });
+
+  // Price checkboxes
+  filterGroups.forEach(group => {
+    const title = group.querySelector('.ftitle');
+    if (!title || title.textContent.trim() !== 'Price') return;
+    const boxes = group.querySelectorAll('input[type=checkbox]');
+    boxes.forEach(box => box.addEventListener('change', () => {
+      if (box.checked) {
+        boxes.forEach(b => { if (b !== box) b.checked = false; });
+        state.price = PRICE_BANDS[box.parentElement.textContent.trim()] || null;
+      } else state.price = null;
+      runSearch();
+    }));
+  });
+
+  // Clear all
+  const clearLink = document.querySelector('.clear');
+  if (clearLink) clearLink.addEventListener('click', e => {
+    e.preventDefault();
+    state.q = ''; state.type = null; state.category = null; state.audience = null; state.price = null; state.sort = 'newest';
+    if (searchInput) searchInput.value = '';
+    document.querySelectorAll('.filters input[type=checkbox]').forEach(b => b.checked = false);
+    typeTabs.forEach(t => t.classList.remove('active'));
+    if (typeTabs[0]) typeTabs[0].classList.add('active');
+    if (sortSelect) sortSelect.selectedIndex = 0;
+    renderCategories();
+    runSearch();
+  });
+
+  renderCategories();  // initial (All -> shows the "pick a type" note)
+  runSearch();
+});
+</script>
+</body>
+</html>

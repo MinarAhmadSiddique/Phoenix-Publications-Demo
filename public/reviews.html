@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reviews &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display:flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+  .btn:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+ 
+  .head { padding: var(--space-16) 0 var(--space-8); }
+  .head h1 { font-family: var(--font-display); font-size: var(--size-3xl); letter-spacing: -0.02em; margin: 0 0 var(--space-2); }
+  .head .sub { color: var(--stone); font-size: var(--size-base); max-width: 60ch; line-height: 1.5; }
+ 
+  .writer { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-8); margin-bottom: var(--space-12); background: var(--paper-2, var(--paper)); }
+  .writer h2 { font-size: var(--size-lg); margin: 0 0 var(--space-4); }
+  .field { margin-bottom: var(--space-4); position: relative; }
+  .field label { display: block; font-size: var(--size-sm); font-weight: 500; margin-bottom: var(--space-2); }
+  .field input, .field textarea, .field select { width: 100%; font-family: var(--font-body); font-size: var(--size-base); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); box-sizing: border-box; }
+  .field textarea { min-height: 100px; resize: vertical; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--ember); }
+  .suggest { position: absolute; top: 100%; left: 0; right: 0; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); z-index: 20; margin-top: 4px; max-height: 240px; overflow-y: auto; display: none; }
+  .suggest .item { padding: var(--space-3) var(--space-4); cursor: pointer; font-size: var(--size-sm); }
+  .suggest .item:hover, .suggest .item.active { background: rgba(181,70,46,0.08); }
+  .suggest .item .a { color: var(--stone); font-size: var(--size-xs); }
+  .suggest .none { padding: var(--space-3) var(--space-4); font-size: var(--size-sm); color: var(--stone); }
+  .row2 { display: grid; grid-template-columns: 1fr 160px; gap: var(--space-4); }
+  .writer .picked { font-size: var(--size-sm); color: var(--pine); margin-bottom: var(--space-2); }
+  .wmsg { padding: var(--space-3) var(--space-4); border-radius: var(--radius); font-size: var(--size-sm); margin-bottom: var(--space-4); display: none; }
+  .wmsg.ok { background: rgba(61,90,82,0.12); color: var(--pine); display: block; }
+  .wmsg.err { background: #fdecea; color: #a3271b; display: block; }
+  .locked { color: var(--stone); font-size: var(--size-sm); line-height: 1.6; }
+ 
+  .searchbar { margin-bottom: var(--space-8); }
+  .searchbar input { width: 100%; font-family: var(--font-body); font-size: var(--size-base); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); box-sizing: border-box; }
+  .searchbar input:focus { outline: none; border-color: var(--ember); }
+ 
+  .reviews { padding-bottom: var(--space-16); }
+  .review { border-top: 1px solid var(--line); padding: var(--space-6) 0; }
+  .review .rtop { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-2); }
+  .review .rbook { font-family: var(--font-display); font-size: var(--size-lg); font-weight: 600; }
+  .review .rbook a { color: var(--ink); }
+  .review .rbook a:hover { color: var(--ember); text-decoration: none; }
+  .review .rating { font-family: var(--font-display); font-weight: 600; color: var(--ember); white-space: nowrap; }
+  .review .rmeta { font-size: var(--size-sm); color: var(--stone); margin-bottom: var(--space-3); }
+  .review .rmeta a { color: var(--pine); }
+  .review .rbody { font-size: var(--size-base); line-height: 1.6; color: var(--ink); opacity: 0.9; white-space: pre-wrap; }
+  .empty { text-align: center; color: var(--stone); padding: var(--space-16); border: 1px dashed var(--line); border-radius: var(--radius); }
+ 
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; margin-top: var(--space-8); }
+  .foot-row { display: flex; justify-content: space-between; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row a { color: var(--stone); }
+ 
+  @media (max-width: 640px) { .row2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+      <a class="hide-sm" href="search.html">Browse</a>
+      <a href="login.html">Log in</a>
+      <a class="btn solid" href="signup.html">Join Phoenix</a>
+    </nav>
+  </div>
+</header>
+ 
+<div class="wrap">
+  <div class="head">
+    <h1>Reader reviews</h1>
+    <div class="sub">Honest words from people who actually read the work. Only readers who've gotten a piece from Phoenix can review it &mdash; so every review here is the real thing.</div>
+  </div>
+ 
+  <!-- Write a review (only shown to logged-in members) -->
+  <div class="writer" id="writer" style="display:none">
+    <h2>Write a review</h2>
+    <div class="wmsg" id="wmsg"></div>
+ 
+    <div class="field">
+      <label for="bookInput">Which work? (start typing a title you've read)</label>
+      <input type="text" id="bookInput" placeholder="Type a book title" autocomplete="off">
+      <div class="suggest" id="suggest"></div>
+      <div class="picked" id="picked"></div>
+    </div>
+ 
+    <div class="row2">
+      <div class="field">
+        <label for="authorInput">Author</label>
+        <input type="text" id="authorInput" placeholder="Auto-fills when you pick a book" readonly style="opacity:0.7">
+      </div>
+      <div class="field">
+        <label for="ratingInput">Rating (1&ndash;10)</label>
+        <select id="ratingInput">
+          <option value="">&mdash;</option>
+          <option>10</option><option>9</option><option>8</option><option>7</option><option>6</option>
+          <option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>
+        </select>
+      </div>
+    </div>
+ 
+    <div class="field">
+      <label for="bodyInput">Your review</label>
+      <textarea id="bodyInput" placeholder="What did you think? Be honest other readers rely on it."></textarea>
+    </div>
+ 
+    <button class="btn solid" id="submitBtn" type="button">Post review</button>
+  </div>
+ 
+  <!-- Prompt for logged-out visitors -->
+  <div class="writer" id="loginPrompt" style="display:none">
+    <div class="locked">Want to leave a review? <a href="login.html">Log in</a> reviews are open to readers who've gotten the work from Phoenix.</div>
+  </div>
+ 
+  <!-- Search -->
+  <div class="searchbar">
+    <input type="text" id="searchInput" placeholder="Search reviews by book title or author">
+  </div>
+ 
+  <!-- Reviews list -->
+  <div class="reviews" id="reviewsList">
+    <div class="empty">Loading reviews\u2026</div>
+  </div>
+</div>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div><span style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div><a href="search.html">Browse</a> &middot; <a href="legal/terms.html">Terms</a> &middot; <a href="legal/privacy.html">Privacy</a></div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+ 
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const esc = s => (s || '').replace(/</g, '&lt;');
+ 
+  // ---- Login-aware nav + show writer or prompt ----
+  let me = null;
+  try {
+    const r = await fetch('/api/me');
+    if (r.ok) me = await r.json();
+  } catch (e) {}
+ 
+  if (me) {
+    const nav = document.querySelector('nav.main');
+    const avatarInner = (me.avatar_key && me.avatar_key !== 'none')
+      ? '<img src="/' + me.avatar_key + '" alt="You" style="width:100%;height:100%;object-fit:cover;display:block">'
+      : (me.display_name || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    if (nav) nav.innerHTML =
+      '<a class="hide-sm" href="index.html">Home</a>' +
+      '<a class="hide-sm" href="members/dashboard.html">Dashboard</a>' +
+      '<a class="hide-sm" href="members/library.html">Library</a>' +
+      '<a class="hide-sm" href="search.html">Browse</a>' +
+      ' <a class="hide-sm" href="reviews.html">Reviews</a>'+
+      '<a class="btn solid" href="members/publish.html">Publish</a>' +
+      '<a href="members/editProfile.html" title="Settings" style="display:inline-flex;align-items:center"><span style="width:32px;height:32px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(150deg,var(--pine),var(--ink));color:var(--paper);font-family:var(--font-display);font-size:var(--size-xs);flex-shrink:0">' + avatarInner + '</span></a>';
+    document.getElementById('writer').style.display = 'block';
+  } else {
+    document.getElementById('loginPrompt').style.display = 'block';
+  }
+ 
+  // ---- Review writer (autocomplete + submit) ----
+  let pickedBook = null;
+  const bookInput = document.getElementById('bookInput');
+  const suggest = document.getElementById('suggest');
+  const authorInput = document.getElementById('authorInput');
+  const pickedEl = document.getElementById('picked');
+  const wmsg = document.getElementById('wmsg');
+ 
+  function showWmsg(t, ok){ wmsg.textContent = t; wmsg.className = 'wmsg ' + (ok ? 'ok' : 'err'); }
+ 
+  let debounce;
+  if (bookInput) {
+    bookInput.addEventListener('input', () => {
+      pickedBook = null; authorInput.value = ''; pickedEl.textContent = '';
+      const q = bookInput.value.trim();
+      clearTimeout(debounce);
+      if (!q) { suggest.style.display = 'none'; return; }
+      debounce = setTimeout(async () => {
+        try {
+          const r = await fetch('/api/reviewable-books?q=' + encodeURIComponent(q));
+          if (!r.ok) { suggest.style.display = 'none'; return; }
+          const books = await r.json();
+          if (books.length === 0) {
+            suggest.innerHTML = '<div class="none">No matches among works you\u2019ve gotten. You can only review those.</div>';
+            suggest.style.display = 'block';
+            return;
+          }
+          suggest.innerHTML = books.map(b =>
+            '<div class="item" data-id="' + b.id + '" data-author="' + esc(b.author) + '">' +
+              esc(b.title) + ' <span class="a">by ' + esc(b.author) + '</span></div>'
+          ).join('');
+          suggest.style.display = 'block';
+          suggest.querySelectorAll('.item').forEach(it => {
+            it.addEventListener('click', () => {
+              pickedBook = Number(it.dataset.id);
+              bookInput.value = it.textContent.replace(/ by .*$/, '').trim();
+              authorInput.value = it.dataset.author;
+              pickedEl.textContent = '\u2713 Reviewing this work';
+              suggest.style.display = 'none';
+            });
+          });
+        } catch (e) { suggest.style.display = 'none'; }
+      }, 200);
+    });
+    document.addEventListener('click', (e) => {
+      if (!suggest.contains(e.target) && e.target !== bookInput) suggest.style.display = 'none';
+    });
+  }
+ 
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      const rating = document.getElementById('ratingInput').value;
+      const body = document.getElementById('bodyInput').value.trim();
+      if (!pickedBook) { showWmsg('Pick a work from the suggestions first.',  rfalse);eturn; }
+      if (!rating) { showWmsg('Please give a rating out of 10.', false); return; }
+      if (!body) { showWmsg('Please write a few words.', false); return; }
+      submitBtn.textContent = 'Posting\u2026'; submitBtn.disabled = true;
+      try {
+        const r = await fetch('/api/reviews', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookId: pickedBook, rating: Number(rating), body })
+        });
+        const data = await r.json();
+        if (r.ok) {
+          showWmsg('Your review is posted. Thank you!', true);
+          document.getElementById('bodyInput').value = '';
+          document.getElementById('ratingInput').value = '';
+          bookInput.value = ''; authorInput.value = ''; pickedEl.textContent = ''; pickedBook = null;
+          loadReviews('');
+        } else {
+          showWmsg(data.error || 'Could not post.', false);
+        }
+      } catch (e) { showWmsg('Something went wrong.', false); }
+      submitBtn.textContent = 'Post review'; submitBtn.disabled = false;
+    });
+  }
+ 
+  // ---- Reviews list + search ----
+  const listEl = document.getElementById('reviewsList');
+  function timeAgo(iso) {
+    const d = new Date(iso.replace(' ', 'T') + 'Z');
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+  async function loadReviews(q) {
+    try {
+      const r = await fetch('/api/reviews' + (q ? '?q=' + encodeURIComponent(q) : ''));
+      const reviews = await r.json();
+      if (!reviews || reviews.length === 0) {
+        listEl.innerHTML = '<div class="empty">' + (q ? 'No reviews match \u201C' + esc(q) + '\u201D.' : 'No reviews yet. Be the first to share what you read.') + '</div>';
+        return;
+      }
+      listEl.innerHTML = reviews.map(rv =>
+        '<div class="review">' +
+          '<div class="rtop">' +
+            '<div class="rbook"><a href="bookDetail.html?id=' + rv.book_id + '">' + esc(rv.title) + '</a></div>' +
+            '<div class="rating">' + rv.rating + '/10</div>' +
+          '</div>' +
+          '<div class="rmeta">by <a href="memberProfile.html?handle=' + rv.author_handle + '">' + esc(rv.author) + '</a>' +
+            ' &middot; reviewed by ' + esc(rv.reviewer) + ' &middot; ' + timeAgo(rv.created_at) +
+            (rv.edited_at ? ' (edited)' : '') + '</div>' +
+          '<div class="rbody">' + esc(rv.body) + '</div>' +
+        '</div>'
+      ).join('');
+    } catch (e) {
+      listEl.innerHTML = '<div class="empty">Could not load reviews.</div>';
+    }
+  }
+ 
+  const searchInput = document.getElementById('searchInput');
+  let sd;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(sd);
+    sd = setTimeout(() => loadReviews(searchInput.value.trim()), 250);
+  });
+ 
+  loadReviews('');
+});
+</script>
+</body>
+</html>

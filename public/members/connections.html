@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your community &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+  .narrow { max-width: 760px; }
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a.here { opacity: 1; color: var(--ember); font-weight: 500; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+ 
+  .phead { padding: var(--space-16) 0 var(--space-6); }
+  .phead h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-2); }
+  .phead .line { font-size: var(--size-base); color: var(--stone); }
+ 
+  .tabs { display: flex; gap: var(--space-2); border-bottom: 1px solid var(--line); margin-bottom: var(--space-8); }
+  .tab { padding: var(--space-3) var(--space-5); font-size: var(--size-base); color: var(--stone); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: var(--font-body); }
+  .tab.active { color: var(--ink); border-bottom-color: var(--ember); font-weight: 500; }
+ 
+  .plist { display: flex; flex-direction: column; gap: var(--space-2); padding-bottom: var(--space-16); }
+  .prow { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); transition: border-color .15s; }
+  .prow:hover { border-color: var(--stone); }
+  .pav { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); color: var(--paper); font-size: var(--size-lg); flex-shrink: 0; overflow: hidden; }
+  .pav img { width: 100%; height: 100%; object-fit: cover; }
+  .pinfo { flex: 1; min-width: 0; }
+  .pinfo .pn { font-weight: 600; font-size: var(--size-base); color: var(--ink); }
+  .pinfo .ph { font-size: var(--size-sm); color: var(--stone); }
+  .pinfo .pt { font-size: var(--size-sm); color: var(--ink); opacity: 0.75; font-style: italic; margin-top: 2px; }
+  .prow .go { font-size: var(--size-sm); color: var(--ember); }
+  .empty { text-align: center; padding: var(--space-16) 0; color: var(--stone); }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+      <a class="hide-sm" href="dashboard.html">Dashboard</a>
+      <a class="hide-sm" href="library.html">Library</a>
+      <a class="here" href="connections.html">Community</a>
+      <a class="hide-sm" href="/logout">Log out</a>
+      <a class="btn solid" href="publish.html">Publish</a>
+    </nav>
+  </div>
+</header>
+ 
+<section class="phead">
+  <div class="wrap narrow">
+    <h1>Your community</h1>
+    <div class="line">The people who follow your work, and the writers you're following.</div>
+  </div>
+</section>
+ 
+<div class="wrap narrow">
+  <div class="tabs">
+    <button class="tab active" data-tab="followers">Followers</button>
+    <button class="tab" data-tab="following">Following</button>
+  </div>
+  <div class="plist" id="plist"></div>
+</div>
+ 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const list = document.getElementById('plist');
+  const tabs = document.querySelectorAll('.tab');
+  function esc(s){ return (s||'').replace(/</g,'&lt;'); }
+  function initials(n){ return (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+ 
+  function avatarHtml(p){
+    if (p.avatar_key && p.avatar_key !== 'none') {
+      return '<div class="pav"><img src="/'+p.avatar_key+'" alt="'+esc(p.display_name)+'"></div>';
+    }
+    return '<div class="pav">'+initials(p.display_name)+'</div>';
+  }
+ 
+  async function load(tab){
+    list.innerHTML = '<div class="empty">Loading…</div>';
+    try {
+      const res = await fetch(tab === 'followers' ? '/api/my-followers' : '/api/my-following');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const people = await res.json();
+      if (people.length === 0) {
+        list.innerHTML = '<div class="empty">' +
+          (tab === 'followers' ? 'No followers yet. Publish and share your work — readers follow writers they connect with.' : 'You\'re not following anyone yet. Find writers whose work you love and follow them.') +
+          '</div>';
+        return;
+      }
+      list.innerHTML = '';
+      for (const p of people) {
+        const a = document.createElement('a');
+        a.href = '../memberProfile.html?handle=' + encodeURIComponent(p.handle);
+        a.className = 'prow';
+        a.style.textDecoration = 'none';
+        a.innerHTML = avatarHtml(p) +
+          '<div class="pinfo">' +
+            '<div class="pn">' + esc(p.display_name) + '</div>' +
+            '<div class="ph">@' + esc(p.handle) + '</div>' +
+            (p.tagline ? '<div class="pt">' + esc(p.tagline) + '</div>' : '') +
+          '</div>' +
+          '<div class="go">View &rarr;</div>';
+        list.appendChild(a);
+      }
+    } catch (err) { console.error(err); list.innerHTML = '<div class="empty">Could not load.</div>'; }
+  }
+ 
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    load(t.dataset.tab);
+  }));
+ 
+  // Honor ?tab=following from the dashboard link.
+  const params = new URLSearchParams(window.location.search);
+  const startTab = params.get('tab') === 'following' ? 'following' : 'followers';
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === startTab));
+  load(startTab);
+});
+</script>
+ 
+</body>
+</html>

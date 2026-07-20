@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit your work &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+  .narrow { max-width: 640px; }
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+  .phead { padding: var(--space-16) 0 var(--space-8); }
+  .phead h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-2); }
+  .phead .line { color: var(--stone); font-size: var(--size-base); }
+  .field { margin-bottom: var(--space-6); }
+  .field label { display: block; font-size: var(--size-sm); font-weight: 500; margin-bottom: var(--space-2); }
+  .field .hint { color: var(--stone); font-weight: 400; font-size: var(--size-xs); }
+  .field input, .field textarea, .field select { width: 100%; font-family: var(--font-body); font-size: var(--size-base); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); }
+  .field textarea { min-height: 120px; resize: vertical; line-height: 1.55; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--ember); }
+  .priceRow { display: flex; gap: var(--space-4); align-items: center; }
+  .priceRow .free { display: flex; align-items: center; gap: var(--space-2); font-size: var(--size-sm); color: var(--stone); white-space: nowrap; }
+  .savebar { display: flex; align-items: center; gap: var(--space-4); margin: var(--space-8) 0 var(--space-16); }
+  .savebar .note { font-size: var(--size-xs); color: var(--stone); }
+  .msg { padding: var(--space-3) var(--space-4); border-radius: var(--radius); margin-bottom: var(--space-6); font-size: var(--size-sm); display: none; }
+  .msg.err { background: #fdecea; color: #a3271b; display: block; }
+  .cur-cover { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
+  .cur-cover .cov { width: 60px; height: 76px; border-radius: var(--radius); background: linear-gradient(150deg,var(--pine),var(--ink)); overflow: hidden; flex-shrink: 0; }
+  .cur-cover .cov img { width: 100%; height: 100%; object-fit: cover; }
+  .cur-cover .note { font-size: var(--size-xs); color: var(--stone); }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+    <nav class="main">
+      <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="dashboard.html">Dashboard</a>
+      <a class="hide-sm" href="library.html">Library</a>
+      <a class="btn solid" href="publish.html">Publish</a>
+      <a href="/logout">Log out</a>
+    </nav>
+  </div>
+</header>
+ 
+<section class="phead">
+  <div class="wrap narrow">
+    <h1>Edit your work</h1>
+    <div class="line">Update the details readers see. To change the manuscript file itself, remove this work and publish it fresh.</div>
+  </div>
+</section>
+ 
+<div class="wrap narrow">
+  <div class="msg err" id="errMsg"></div>
+ 
+  <div class="cur-cover">
+    <div class="cov" id="curCover"></div>
+    <div class="note">Cover changes come with the next update. For now, the cover stays as published.</div>
+  </div>
+ 
+  <div class="field">
+    <label for="title">Title</label>
+    <input type="text" id="title">
+  </div>
+ 
+  <div class="field">
+    <label for="description">Description <span class="hint">&mdash; what readers see</span></label>
+    <textarea id="description"></textarea>
+  </div>
+ 
+  <div class="field">
+    <label for="category">Category</label>
+    <select id="category"></select>
+  </div>
+ 
+  <div class="field">
+    <label for="price">Price</label>
+    <div class="priceRow">
+      <input type="number" id="price" step="0.01" min="0" placeholder="4.99" style="max-width:160px">
+      <label class="free"><input type="checkbox" id="isFree" style="width:auto"> Make it free</label>
+    </div>
+    <div class="hint" style="margin-top:var(--space-2)">Price changes only affect new sales. People who already bought keep what they paid.</div>
+  </div>
+ 
+  <div class="savebar">
+    <button class="btn solid" type="button" id="saveBtn">Save changes</button>
+    <a class="btn" href="dashboard.html">Cancel</a>
+    <span class="note" id="savedNote"></span>
+  </div>
+</div>
+ 
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const bookId = params.get('id');
+  const errMsg = document.getElementById('errMsg');
+  const titleI = document.getElementById('title');
+  const descI = document.getElementById('description');
+  const catSel = document.getElementById('category');
+  const priceI = document.getElementById('price');
+  const freeC = document.getElementById('isFree');
+  const saveBtn = document.getElementById('saveBtn');
+  const savedNote = document.getElementById('savedNote');
+  const curCover = document.getElementById('curCover');
+ 
+  function showErr(m){ errMsg.textContent = m; errMsg.style.display='block'; }
+ 
+  if (!bookId) { showErr('No book specified.'); return; }
+ 
+  // Load taxonomy for the category dropdown + the book.
+  let book = null, taxonomy = { categories: [] };
+  try {
+    const [bRes, tRes] = await Promise.all([
+      fetch('/api/my-book/' + bookId),
+      fetch('/api/taxonomy')
+    ]);
+    if (!bRes.ok) {
+      const e = await bRes.json();
+      showErr(e.error || 'Could not load this work.');
+      return;
+    }
+    book = await bRes.json();
+    taxonomy = await tRes.json();
+  } catch (err) { showErr('Could not load.'); return; }
+ 
+  // Fill fields.
+  titleI.value = book.title || '';
+  descI.value = book.description || '';
+  if (book.price_cents === 0) { freeC.checked = true; priceI.value = ''; priceI.disabled = true; }
+  else priceI.value = (book.price_cents / 100).toFixed(2);
+ 
+  // Cover preview.
+  if (book.cover_key && book.cover_key !== 'none' && book.cover_key !== 'pending') {
+    curCover.innerHTML = '<img src="/' + book.cover_key + '" alt="cover">';
+  }
+ 
+  // Categories for this content type.
+  const cats = (taxonomy.categories || []).filter(c => c.content_type_id === book.content_type_id);
+  catSel.innerHTML = cats.map(c =>
+    '<option value="' + c.id + '"' + (c.id === book.category_id ? ' selected' : '') + '>' + c.name.replace(/</g,'&lt;') + '</option>'
+  ).join('');
+ 
+  freeC.addEventListener('change', () => {
+    priceI.disabled = freeC.checked;
+    if (freeC.checked) priceI.value = '';
+  });
+ 
+  saveBtn.addEventListener('click', async () => {
+    errMsg.style.display = 'none';
+    const title = titleI.value.trim();
+    if (!title) { showErr('Title is required.'); return; }
+    if (!freeC.checked) {
+      const p = parseFloat(priceI.value);
+      if (isNaN(p) || p < 0) { showErr('Enter a valid price, or mark it free.'); return; }
+    }
+    saveBtn.textContent = 'Saving...'; saveBtn.disabled = true;
+    try {
+      const r = await fetch('/api/my-book/' + bookId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description: descI.value.trim(),
+          is_free: freeC.checked ? 'yes' : 'no',
+          price: priceI.value,
+          category_id: catSel.value
+        })
+      });
+      if (r.ok) {
+        savedNote.textContent = 'Saved \u2713';
+        setTimeout(() => window.location.href = 'dashboard.html', 900);
+      } else {
+        const e = await r.json();
+        showErr(e.error || 'Could not save.');
+        saveBtn.textContent = 'Save changes'; saveBtn.disabled = false;
+      }
+    } catch (err) {
+      showErr('Something went wrong.');
+      saveBtn.textContent = 'Save changes'; saveBtn.disabled = false;
+    }
+  });
+});
+</script>
+ 
+</body>
+</html>

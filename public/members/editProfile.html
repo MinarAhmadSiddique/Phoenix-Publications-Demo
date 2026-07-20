@@ -1,0 +1,427 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings &middot; Phoenix Publications</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--space-6); }
+  .narrow { max-width: 720px; }
+  header.top { border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; background: rgba(251,249,244,0.85); backdrop-filter: blur(8px); }
+  .top-inner { max-width: var(--maxw); margin: 0 auto; padding: var(--space-4) var(--space-6); display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  .brand { font-family: var(--font-display); font-weight: 600; font-size: var(--size-lg); color: var(--ink); display: flex; align-items: baseline; gap: var(--space-2); }
+  .brand .mark { color: var(--ember); }
+  nav.main { display: flex; gap: var(--space-6); align-items: center; font-size: var(--size-sm); }
+  nav.main a { color: var(--ink); opacity: 0.8; }
+  nav.main a.here { opacity: 1; color: var(--ember); font-weight: 500; }
+  nav.main a:hover { opacity: 1; text-decoration: none; }
+  .btn { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-4); border-radius: var(--radius); border: 1px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; transition: background .15s, color .15s; }
+  .btn:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+  .btn.solid { background: var(--ink); color: var(--paper); }
+  .btn.solid:hover { background: var(--ember); border-color: var(--ember); }
+  .phead { padding: var(--space-16) 0 var(--space-8); }
+  .phead h1 { font-size: var(--size-3xl); letter-spacing: -0.02em; margin-bottom: var(--space-3); }
+  .phead .line { font-family: var(--font-display); font-style: italic; font-size: var(--size-lg); color: var(--ink); opacity: 0.82; max-width: 56ch; }
+  .phead .viewlink { margin-top: var(--space-4); font-size: var(--size-sm); }
+  .sec { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-8); margin-bottom: var(--space-8); background: var(--paper); }
+  .sec h2 { font-size: var(--size-xl); margin-bottom: var(--space-2); }
+  .sec .desc { font-size: var(--size-sm); color: var(--stone); margin-bottom: var(--space-8); max-width: 60ch; }
+  .field { margin-bottom: var(--space-6); }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: var(--size-sm); font-weight: 500; margin-bottom: var(--space-2); color: var(--ink); }
+  .field .hint { font-weight: 400; color: var(--stone); font-size: var(--size-xs); }
+  .field input, .field textarea { width: 100%; font-family: var(--font-body); font-size: var(--size-base); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink); transition: border-color .15s; }
+  .field textarea { resize: vertical; min-height: 96px; line-height: 1.55; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--ember); }
+  .field .count { font-size: var(--size-xs); color: var(--stone); margin-top: var(--space-2); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+  .avrow { display: flex; align-items: center; gap: var(--space-6); margin-bottom: var(--space-8); }
+  .avatar-lg { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(150deg, var(--pine), var(--ink)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: var(--size-xl); color: var(--paper); flex-shrink: 0; overflow: hidden; }
+  .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+  .avrow .avmeta .mini { font-size: var(--size-xs); color: var(--stone); margin-top: var(--space-2); }
+  .toggle { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-6); padding: var(--space-5) 0; border-bottom: 1px solid var(--line); }
+  .toggle:last-of-type { border-bottom: none; }
+  .toggle .tinfo .tt { font-weight: 500; font-size: var(--size-base); margin-bottom: var(--space-1); }
+  .toggle .tinfo .td { font-size: var(--size-sm); color: var(--stone); max-width: 52ch; line-height: 1.5; }
+  .switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; margin-top: 2px; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch .slider { position: absolute; inset: 0; background: var(--line); border-radius: 100px; transition: background .15s; cursor: pointer; }
+  .switch .slider::before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: var(--paper); border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch input:checked + .slider { background: var(--ember); }
+  .switch input:checked + .slider::before { transform: translateX(20px); }
+  .switch input:focus-visible + .slider { outline: 2px solid var(--ember); outline-offset: 2px; }
+  .savebar { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-8); }
+  .savebar .note { font-size: var(--size-xs); color: var(--stone); }
+  .danger { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-8); margin-bottom: var(--space-16); }
+  .danger h2 { font-size: var(--size-lg); margin-bottom: var(--space-2); }
+  .danger p { font-size: var(--size-sm); color: var(--stone); max-width: 60ch; margin: 0 0 var(--space-6); }
+  .danger .btn-danger { font-family: var(--font-body); font-size: var(--size-sm); font-weight: 500; padding: var(--space-2) var(--space-5); border: 1px solid var(--ember); border-radius: var(--radius); background: transparent; color: var(--ember); cursor: pointer; }
+  .danger .btn-danger:hover { background: var(--ember); color: var(--paper); }
+  footer.foot { border-top: 1px solid var(--line); padding: var(--space-12) 0; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-6); flex-wrap: wrap; font-size: var(--size-sm); color: var(--stone); }
+  .foot-row .brand { font-size: var(--size-base); }
+  .foot-row a { color: var(--stone); }
+  @media (max-width: 700px) {
+    .two { grid-template-columns: 1fr; gap: var(--space-6); }
+    .phead h1 { font-size: var(--size-2xl); }
+    nav.main .hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+ 
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="../index.html"><span class="mark">&#10022;</span> Phoenix Publications</a>
+   <nav class="main">
+       <a class="hide-sm" href="../index.html">Home</a>
+      <a class="hide-sm" href="dashboard.html">Dashboard</a>
+      <a class="here" href="library.html">Library</a>
+      <a class="hide-sm" href="../search.html">Browse</a>
+      <a class="hide-sm" href="../reviews.html">Reviews</a>
+      <a class="btn solid" href="publish.html">Publish</a>
+      <a href="/logout">Log out</a>
+    </nav>
+  </div>
+</header>
+ 
+<section class="phead">
+  <div class="wrap narrow">
+    <h1>Your profile</h1>
+    <div class="line">This is how the world meets you. Make it sound like you &mdash; readers follow people, not just pages.</div>
+    <div class="viewlink"><a id="viewProfileLink" href="../memberProfile.html">&rarr; See your public profile</a></div>
+  </div>
+</section>
+ 
+<div class="wrap narrow">
+ 
+  <div class="sec">
+    <h2>Identity</h2>
+    <div class="desc">Your name and handle are how readers find and remember you.</div>
+    <div class="avrow">
+      <div class="avatar-lg" id="avatarBox">DM</div>
+      <div class="avmeta">
+        <button class="btn" type="button" id="changePhotoBtn">Change photo</button>
+        <input type="file" id="avatarFile" accept="image/png,image/jpeg,image/webp" style="display:none">
+        <div class="mini">A clear photo helps readers trust the person behind the work. JPG, PNG or WebP, under 3&nbsp;MB.</div>
+      </div>
+    </div>
+    <div class="two">
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" value="">
+      </div>
+      <div class="field">
+        <label for="handle">Handle <span class="hint">&mdash; your public @name</span></label>
+        <input type="text" id="handle" value="">
+      </div>
+    </div>
+    <div class="field">
+      <label for="tagline">One line about you <span class="hint">&mdash; shows under your name</span></label>
+      <input type="text" id="tagline" value="" maxlength="160">
+      <div class="count">A single sentence. The shorter and truer, the better.</div>
+    </div>
+  </div>
+ 
+  <div class="sec">
+    <h2>About</h2>
+    <div class="desc">A few sentences readers see on your profile. Tell them who you are and what you write &mdash; in your own voice.</div>
+    <div class="field">
+      <label for="bio">Your story</label>
+      <textarea id="bio" maxlength="1000"></textarea>
+      <div class="count"><span id="bioCount">0</span> / 1000 characters</div>
+    </div>
+  </div>
+ 
+  <div class="sec">
+    <h2>Account</h2>
+    <div class="desc">Your private sign-in details. Only you see these.</div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" value="">
+      <div id="verifyStatus" style="margin-top:var(--space-2); font-size:var(--size-sm);"></div>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <button class="btn" type="button" id="changePasswordBtn">Change password</button>
+      <div class="count">You'll confirm your current password before setting a new one.</div>
+    </div>
+  </div>
+ 
+  <div class="sec">
+    <h2>Preferences</h2>
+    <div class="desc">You're always in control of how Phoenix reaches you and how your work travels. Change these any time.</div>
+    <div class="toggle">
+      <div class="tinfo">
+        <div class="tt">The Phoenix newsletter</div>
+        <div class="td">Our picks and the occasional note. One click to leave, always.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="prefNewsletter"><span class="slider"></span></label>
+    </div>
+    <div class="toggle">
+      <div class="tinfo">
+        <div class="tt">Let my work be considered for the channel</div>
+        <div class="td">If something of yours is chosen, we may feature its cover and description on the Phoenix channel. You can still decide book by book when you publish.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="prefConsiderChannel"><span class="slider"></span></label>
+    </div>
+    <div class="toggle">
+      <div class="tinfo">
+        <div class="tt">Let my work be considered for the newsletter</div>
+        <div class="td">Your chosen pieces may be shared with subscribers who asked to hear from us.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="prefConsiderNewsletter"><span class="slider"></span></label>
+    </div>
+    <div class="toggle">
+      <div class="tinfo">
+        <div class="tt">Email me when someone follows or comments</div>
+        <div class="td">A quiet nudge when a reader connects with your work.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="prefNotify"><span class="slider"></span></label>
+    </div>
+  </div>
+ 
+  <div class="sec">
+    <h2>Visibility</h2>
+    <div class="desc">Decide whether readers can find and follow your profile. Publishing anything makes your author profile public automatically &mdash; that's how readers discover you.</div>
+    <div class="toggle">
+      <div class="tinfo">
+        <div class="tt">Show my profile publicly</div>
+        <div class="td">Others can find you by name, see your shelf, and follow you. Turn this off to stay private if you only read.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="visibilityToggle"><span class="slider"></span></label>
+    </div>
+  </div>
+ 
+  <div class="savebar">
+    <button class="btn solid" type="button" id="saveBtn">Save changes</button>
+    <span class="note">Your changes go live the moment you save.</span>
+  </div>
+ 
+  <div style="height: var(--space-12);"></div>
+ 
+  <div class="danger">
+    <h2>Close your account</h2>
+    <p>You can leave Phoenix any time. Your published work will be taken down and your profile removed. Readers who already bought your work keep their copies, and any earnings owed to you will be paid out first.</p>
+    <button class="btn-danger" type="button" id="deleteAccountBtn">Close my account</button>
+  </div>
+ 
+</div>
+ 
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="brand"><span class="mark" style="color:var(--ember)">&#10022;</span> Phoenix Publications</div>
+      <div>
+        <a href="../search.html">Browse</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/terms.html">Terms</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
+        <a href="../legal/report.html">Report something</a>
+      </div>
+      <div>&copy; 2026 Phoenix</div>
+    </div>
+  </div>
+</footer>
+ 
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const $ = id => document.getElementById(id);
+  const nameInput = $('name'), handleInput = $('handle'), taglineInput = $('tagline');
+  const bioInput = $('bio'), emailInput = $('email');
+  const visToggle = $('visibilityToggle');
+  const pNews = $('prefNewsletter'), pChan = $('prefConsiderChannel'),
+        pNewsC = $('prefConsiderNewsletter'), pNotify = $('prefNotify');
+  const saveBtn = $('saveBtn');
+  const viewLink = $('viewProfileLink');
+  const avatarBox = $('avatarBox');
+  const changePhotoBtn = $('changePhotoBtn');
+  const avatarFile = $('avatarFile');
+  const bioCount = $('bioCount');
+ 
+
+  function initials(name) {
+    return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  }
+  function showAvatar(me) {
+    if (me.avatar_key && me.avatar_key !== 'none') {
+      avatarBox.innerHTML = '<img src="/' + me.avatar_key + '?t=' + Date.now() + '" alt="Your photo">';
+    } else {
+      avatarBox.textContent = initials(me.display_name);
+    }
+  }
+ 
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) { window.location.href = '/login.html'; return; }
+    const me = await res.json();
+    if (nameInput) nameInput.value = me.display_name || '';
+    if (taglineInput) taglineInput.value = me.tagline || '';
+    if (bioInput) { bioInput.value = me.bio || ''; if (bioCount) bioCount.textContent = (me.bio || '').length; }
+    if (emailInput) { emailInput.value = me.email || ''; emailInput.readOnly = true; emailInput.style.opacity = '0.6'; }
+    if (handleInput) { handleInput.value = me.handle || ''; handleInput.readOnly = true; handleInput.style.opacity = '0.6'; }
+    if (visToggle) visToggle.checked = (me.profile_visibility === 'public');
+    if (pNews) pNews.checked = !!me.pref_newsletter;
+    if (pChan) pChan.checked = !!me.pref_consider_channel;
+    if (pNewsC) pNewsC.checked = !!me.pref_consider_newsletter;
+    if (pNotify) pNotify.checked = !!me.pref_notify;
+    if (viewLink) viewLink.href = '../memberProfile.html?handle=' + encodeURIComponent(me.handle);
+    showAvatar(me);
+  // Email verification status
+  const vStatus = document.getElementById('verifyStatus');
+  if (vStatus) {
+    if (me.verified) {
+      vStatus.innerHTML = '<span style="color:var(--pine)">\u2713 Verified</span>';
+    } else {
+      vStatus.innerHTML =
+        '<span style="color:#a3271b">\u26A0 Not verified.</span> ' +
+        'Without a verified email you won\u2019t get password resets or the newsletter. ' +
+        '<a href="#" id="resendVerify" style="color:var(--ember);font-weight:500">Verify now</a>';
+      const rv = document.getElementById('resendVerify');
+      if (rv) rv.addEventListener('click', async (e) => {
+        e.preventDefault();
+        rv.textContent = 'Sending\u2026';
+        try {
+          const r = await fetch('/api/me/send-verification', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+          const d = await r.json();
+          if (r.ok) rv.outerHTML = '<span style="color:var(--pine)">Verification email sent \u2014 check your inbox.</span>';
+          else rv.textContent = d.error || 'Could not send.';
+        } catch (err) { rv.textContent = 'Could not send.'; }
+      });
+    }
+  }
+  } catch (err) { console.error(err); return; }
+
+
+  if (bioInput && bioCount) {
+    bioInput.addEventListener('input', () => { bioCount.textContent = bioInput.value.length; });
+  }
+ 
+  if (changePhotoBtn && avatarFile) {
+    changePhotoBtn.addEventListener('click', () => avatarFile.click());
+    avatarFile.addEventListener('change', async () => {
+      const file = avatarFile.files[0];
+      if (!file) return;
+      if (file.size > 3 * 1024 * 1024) { alert('Please choose an image under 3 MB.'); return; }
+      changePhotoBtn.textContent = 'Uploading...'; changePhotoBtn.disabled = true;
+      try {
+        const fd = new FormData();
+        fd.append('avatar', file);
+        const r = await fetch('/api/me/avatar', { method: 'POST', body: fd });
+        if (r.ok) {
+          const data = await r.json();
+          avatarBox.innerHTML = '<img src="/' + data.avatar_key + '?t=' + Date.now() + '" alt="Your photo">';
+        } else {
+          const e = await r.json(); alert(e.error || 'Could not upload.');
+        }
+      } catch (err) { alert('Upload failed.'); }
+      changePhotoBtn.textContent = 'Change photo';
+      changePhotoBtn.disabled = false;
+      avatarFile.value = '';
+    });
+  }
+ 
+ 
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      if (!nameInput.value.trim()) { alert('Name cannot be empty.'); return; }
+      const payload = {
+        display_name: nameInput.value.trim(),
+        tagline: taglineInput ? taglineInput.value.trim() : '',
+        bio: bioInput ? bioInput.value.trim() : '',
+        visibility: (visToggle && visToggle.checked) ? 'public' : 'private',
+        pref_newsletter: pNews ? pNews.checked : false,
+        pref_consider_channel: pChan ? pChan.checked : false,
+        pref_consider_newsletter: pNewsC ? pNewsC.checked : false,
+        pref_notify: pNotify ? pNotify.checked : false
+      };
+      saveBtn.textContent = 'Saving...'; saveBtn.disabled = true;
+      try {
+        const r = await fetch('/api/me', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (r.ok) {
+          saveBtn.textContent = 'Saved \u2713';
+          setTimeout(() => { saveBtn.textContent = 'Save changes'; saveBtn.disabled = false; }, 1500);
+        } else {
+          const e = await r.json(); alert(e.error || 'Could not save.');
+          saveBtn.textContent = 'Save changes'; saveBtn.disabled = false;
+        }
+      } catch (err) {
+        alert('Something went wrong.');
+        saveBtn.textContent = 'Save changes'; saveBtn.disabled = false;
+      }
+    });
+  }
+// --- Change password ---
+  const pwBtn = document.getElementById('changePasswordBtn');
+  if (pwBtn) {
+    pwBtn.addEventListener('click', async () => {
+      const current = prompt('Enter your CURRENT password:');
+      if (current === null) return;
+      const next = prompt('Enter your NEW password (at least 8 characters):');
+      if (next === null) return;
+      const confirm2 = prompt('Confirm your NEW password:');
+      if (confirm2 === null) return;
+
+      if (next !== confirm2) { alert('The new passwords don\'t match.'); return; }
+      if (next.length < 8) { alert('New password must be at least 8 characters.'); return; }
+
+      try {
+        const r = await fetch('/api/me/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ current, next })
+        });
+        const data = await r.json();
+        if (r.ok) alert('Your password has been changed.');
+        else alert(data.error || 'Could not change your password.');
+      } catch (err) {
+        alert('Something went wrong.');
+      }
+    });
+  }
+  // --- Close account ---
+  const deleteBtn = document.getElementById('deleteAccountBtn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async () => {
+      // Get their handle to confirm against.
+      let myHandle = handleInput ? handleInput.value : '';
+      const typed = prompt(
+        'This will permanently close your account.\n\n' +
+        '• Works nobody bought will be deleted.\n' +
+        '• Works people bought stay available to those buyers, shown as "Former member".\n' +
+        '• Your profile and personal details will be removed.\n\n' +
+        'This cannot be undone. To confirm, type your handle: ' + myHandle
+      );
+      if (typed === null) return;  // cancelled
+      if (typed.trim() !== myHandle) { alert('That doesn\'t match your handle. Account not closed.'); return; }
+
+      try {
+        const r = await fetch('/api/me/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirmHandle: typed.trim() })
+        });
+        if (r.ok) {
+          alert('Your account has been closed. Thank you for having been part of Phoenix.');
+          window.location.href = '/index.html';
+        } else {
+          const e = await r.json();
+          alert(e.error || 'Could not close your account.');
+        }
+      } catch (err) {
+        alert('Something went wrong.');
+      }
+    });
+  }
+});
+</script>
+ 
+</body>
+</html>
