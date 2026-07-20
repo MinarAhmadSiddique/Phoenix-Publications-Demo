@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Secrets
+.env
+
+# Database files
+phoenix.db
+phoenix.db-wal
+phoenix.db-shm
+
+# Uploaded files
+manuscripts/
+public/covers/
+uploads/
+previews/
+public/avatars/
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
